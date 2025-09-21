@@ -20,6 +20,7 @@ internal class StartOfRoundPatches
     {
         daysClearedInARow = 0;
         HQRebalance.Instance.SetupMoons(__instance);
+        UnityEngine.Resources.FindObjectsOfTypeAll<CaveDwellerAI>()[0].enemyType.increasedChanceInterior = -1;
     }
 
     [HarmonyPatch(nameof(StartOfRound.ShipHasLeft))]
@@ -27,7 +28,10 @@ internal class StartOfRoundPatches
     private static void PreShipHasLeft(StartOfRound __instance)
     {
         if (__instance.IsServer || __instance.IsHost)
-            Networking.HQRNetworkManager.Instance.bottomLine.Value = __instance.GetValueOfAllScrap(onlyScrapCollected: false, onlyNewScrap: true) + ButlerEnemyAIPatches.knifeCount * 35 - __instance.GetBodiesInShip() * 5;
+        {
+            int bodies = UnityEngine.Object.FindObjectsOfType<DeadBodyInfo>().Length;
+            Networking.HQRNetworkManager.Instance.bottomLine.Value = __instance.GetValueOfAllScrap(onlyScrapCollected: false, onlyNewScrap: true) + 35 * ButlerEnemyAIPatches.knifeCount - 5 * bodies;
+        }
     }
 
 

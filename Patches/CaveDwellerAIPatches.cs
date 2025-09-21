@@ -1,17 +1,11 @@
 ﻿using HarmonyLib;
+using Unity.Netcode;
 
 namespace HQRebalance.Patches;
 
 [HarmonyPatch(typeof(CaveDwellerAI))]
 internal class CaveDwellerAIPatches
 {
-    [HarmonyPatch(nameof(CaveDwellerAI.Start))]
-    [HarmonyPostfix]
-    private static void PostStart(CaveDwellerAI __instance)
-    {
-        __instance.enemyType.increasedChanceInterior = -1;
-    }
-
     [HarmonyPatch(nameof(CaveDwellerAI.HitEnemy))]
     [HarmonyPrefix]
     private static void PreHitEnemy(CaveDwellerAI __instance, int force)
@@ -21,22 +15,29 @@ internal class CaveDwellerAIPatches
     }
 
     [HarmonyPatch(nameof(CaveDwellerAI.BabyUpdate))]
-    [HarmonyPostfix]
-    private static void PostBabyUpdate(CaveDwellerAI __instance)
+    [HarmonyPrefix]
+    private static void PreBabyUpdate(CaveDwellerAI __instance)
     {
-        //Patch to localy update hasPlayerFoundBaby to clients because ofc it is broken for client
-        if (__instance.observingPlayer != null)
-        {
-            __instance.hasPlayerFoundBaby = true;
-        }
+        if (!(NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost))
+            return;
 
         if (__instance.eatingScrap && !__instance.hasPlayerFoundBaby)
             __instance.eatingScrap = false;
 
         if (__instance.babyCrying && !__instance.hasPlayerFoundBaby)
         {
-            __instance.SetCryingLocalClient(false);
-            __instance.SetBabyCryingServerRpc(false);
+            __instance.SetCryingLocalClient(setCrying: false);
+            __instance.SetBabyCryingServerRpc(setCry: false);
         }
+    }
+
+    [HarmonyPatch(nameof(CaveDwellerAI.ScareBaby))]
+    [HarmonyPrefix]
+    private static bool PreScareBaby(CaveDwellerAI __instance)
+    {
+        if (!__instance.hasPlayerFoundBaby)
+            return false;
+
+        return true;
     }
 }
