@@ -2,7 +2,7 @@
     <PropertyGroup>
         <AssemblyName>OreoM.HQRebalance</AssemblyName>
         <Product>HQRebalance</Product>
-        <Version>0.6.4</Version>
+        <Version>0.7.1</Version>
     </PropertyGroup>
 
     <PropertyGroup>
