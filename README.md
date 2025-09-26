@@ -8,7 +8,14 @@ HQR is meant to keep the vanilla feeling of the game with changes that make high
 ## Change list
 ### Player changes:
 - Re-implement the ability to ledge climb
-- Player's movement speed reduced very slightly when walking through water caves
+- Player's movement speed reduced while crouch through water caves is almost the same as regular crouching
+
+### Generation changes:
+- Fire exit is more likely to spawn (prevent small mineshaft interiors from having no fire exit, tho it is techinically possible)
+- Fire exit spawning logic changed per interior:
+    - Facility: fire exit will spawn on the other side of maze
+    - Mansion: fire exit can still spawn close to main, but not in a dead end
+    - Minesahft: fire exit will spawn on the otehr side of caves
 
 ### Terminal changes:
 - The `scan` command is not more accurate to the real value
@@ -27,6 +34,7 @@ HQR is meant to keep the vanilla feeling of the game with changes that make high
 - Less facility tiles, more cave tiles, overall smaller by ~10%
 
 ### Butler changes:
+- Removed stealth stab
 - Knives show up on the monitor and counts towards outside items when using the terminal's `scan` command while the butler is alive
 - Knives from both alive and dead butlers are included in the total value displayed at the end of the day
 
@@ -47,9 +55,14 @@ HQR is meant to keep the vanilla feeling of the game with changes that make high
 - Removed the extra +2 spawns per wave
 - During an infestation, when attempting to spawn a new enemy, there's a 60% chance of spawning the current infestation enemy and 40% chance of spawning an enemy using the current moon's spawn distribution
 
+### Luck changes:
+- Luck now increases quota rolls, instead of decreasing
+- Luck doesn't depend on what furniture has been bought, only how many
+- Luck is much more effective in changing rolls
+
 ### Game changes:
 - Indoor fog is permanently disabled
-- Single Item Days are (temporarily?) disabled
+- Single Item Day is disabled
 - Routing to Rend, Dine or Titan is a one time pay for a quota
 - Removed spawn scaling based on how many days are left on the quota
 - Removed extra spawn when suriving 5 days in a row
@@ -61,8 +74,7 @@ HQR is meant to keep the vanilla feeling of the game with changes that make high
 - Reworking this section for a wiki instead of using the README (only for the full release)
 
 ## Planned changes
-- Force fire exit to always generate and to always generate far from main
-- Revamp luck system
+There are no more planed big changes, now HQR will be play test and adjusted for the best experience before the first full release
 
 ## Feedback
 If you played this mod and want to give feedback or ideas on how it could be improved message me on discord (makuaureo) or use the proper channel on my [discord server](https://discord.gg/KQPQFGjCeX)

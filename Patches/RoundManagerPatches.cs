@@ -16,9 +16,10 @@ internal class RoundManagerPatches
         const double minSize = 0.65f; //65% is mines
         const double midSize = (1 - minSize) * 0.5f;
 
-        const double delta = (0.05f) * 0.5f; //How much bigger 2nd facility is than the 1st
-        const double fa1Size = midSize - delta;
-        const double fa2Size = midSize + delta;
+        const double delta = 0.05f; //How much bigger 2nd facility is than the 1st
+        const double halfDelta = delta * 0.5f;
+        const double fa1Size = midSize - halfDelta;
+        const double fa2Size = midSize + halfDelta;
 
         __instance.dungeonFlowTypes[4].MapTileSize = 1.1f;
 
@@ -229,7 +230,7 @@ internal class RoundManagerPatches
     }
 }
 
-internal class RoundManagerHelper
+internal static class RoundManagerHelper
 {
     public static int saveMaxEnemyCount;
 

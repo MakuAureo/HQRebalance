@@ -39,15 +39,15 @@ internal class TerminalPatches
 
         rendNode.itemCost = 0;
         rendNode.terminalOptions[1].result.itemCost = 0;
-        rendNode.displayText = rendNode.displayText.Replace("The cost to route to 85-Rend is [totalCost]", "No additional cost required to route to 85-Rend");
+        rendNode.displayText = "No additional cost required to route to 85-Rend. It is currently [currentPlanetTime] on this moon.\n\nPlease CONFIRM or DENY.\n\n";
 
         dineNode.itemCost = 0;
         dineNode.terminalOptions[1].result.itemCost = 0;
-        dineNode.displayText = dineNode.displayText.Replace("The cost to route to 7-Dine is [totalCost]", "No additional cost required to route to 7-Dine");
+        dineNode.displayText = "No additional cost required to route to 7-Dine. It is currently [currentPlanetTime] on this moon.\n\nPlease CONFIRM or DENY.\n\n";
 
         titanNode.itemCost = 0;
         titanNode.terminalOptions[1].result.itemCost = 0;
-        titanNode.displayText = titanNode.displayText.Replace("The cost to route to 8-Titan is [totalCost]", "No additional cost required to route to 8-Titan");
+        titanNode.displayText = "No additional cost required to route to 8-Titan. It is currently [currentPlanetTime] on this moon.\n\nPlease CONFIRM or DENY.\n\n";
     }
 
     [HarmonyPatch(nameof(Terminal.LoadNewNode))]
@@ -99,9 +99,9 @@ internal class TerminalPatches
         {
             modifiedDisplayText = modifiedDisplayText.Replace(TerminalHelper.passConfirmString, TerminalHelper.PassConfirmDisplay());
         }
-        if (modifiedDisplayText.Contains("[coldMoon]"))
+        if (modifiedDisplayText.Contains(TerminalHelper.coldMoonString))
         {
-            modifiedDisplayText = modifiedDisplayText.Replace("[coldMoon]", TerminalHelper.moon);
+            modifiedDisplayText = modifiedDisplayText.Replace(TerminalHelper.coldMoonString, TerminalHelper.moon);
         }
     }
 }
@@ -110,6 +110,7 @@ internal static class TerminalHelper
 {
     private const int passCost = 610;
     public const string passConfirmString = "[passConfirm]";
+    public const string coldMoonString = "[coldMoon]";
 
     public static Terminal terminal = null!;
     public static string terminalInput = null!;
@@ -190,7 +191,7 @@ internal static class TerminalHelper
             creatureFileID = -1,
             creatureName = "",
             displayPlanetInfo = -1,
-            displayText = "You have requested to route to [coldMoon] without the Cold Moon Pass.\nYou must purchase a Cold Moon Pass first.\n\nThe Cold Moon Pass is a one time fee required to travel to 85-Rend, 7-Dine and 8-Titan. Once purchased, the crew will be able to freely travel to any of the cold moons for the duration of the current quota, free of additional expenses!\nCost: [totalCost].\n\nPlease CONFIRM or DENY.\n\n",
+            displayText = $"You have requested to route to {coldMoonString} without the Cold Moon Pass.\nYou must purchase a Cold Moon Pass first.\n\nThe Cold Moon Pass is a one time fee required to travel to 85-Rend, 7-Dine and 8-Titan. Once purchased, the crew will be able to freely travel to any of the cold moons for the duration of the current quota, free of additional expenses!\nCost: [totalCost].\n\nPlease CONFIRM or DENY.\n\n",
             displayTexture = null,
             displayVideo = null,
             hideFlags = UnityEngine.HideFlags.None,

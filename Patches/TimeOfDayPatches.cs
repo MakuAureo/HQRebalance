@@ -67,7 +67,7 @@ internal class TimeOfDayPatches
 
 }
 
-internal class TimeOfDayHelper
+internal static class TimeOfDayHelper
 {
     public static int luckPoints;
 
