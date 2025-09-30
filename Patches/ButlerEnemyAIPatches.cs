@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ namespace HQRebalance.Patches;
 internal class ButlerEnemyAIPatches
 {
     public static int knifeCount = 0;
-    private static readonly ConditionalWeakTable<EnemyAI, KnifeIconInfo> knifeIcons = new();
+    public static readonly Dictionary<EnemyAI, KnifeIconInfo> knifeIcons = new();
 
     [HarmonyPatch(nameof(ButlerEnemyAI.Start))]
     [HarmonyPostfix]
@@ -32,7 +32,7 @@ internal class ButlerEnemyAIPatches
         if (knifeIcons.TryGetValue(__instance, out KnifeIconInfo knifeIcon))
             knifeIcon.radarIcon.position = knifeIcon.knifeTransform.position;
         else
-            HQRebalance.Logger.LogInfo("Could not find icon to update");
+            HQRebalance.Logger.LogError("Could not find icon to update");
     }
 
     [HarmonyPatch(nameof(ButlerEnemyAI.KillEnemy))]
@@ -44,7 +44,7 @@ internal class ButlerEnemyAIPatches
             knifeCount--;
         }
         else
-            HQRebalance.Logger.LogInfo("Could not find icon to destroy");
+            HQRebalance.Logger.LogError("Could not find icon to destroy");
     }
 
     [HarmonyPatch(nameof(ButlerEnemyAI.OnCollideWithPlayer))]

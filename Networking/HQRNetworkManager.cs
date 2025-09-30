@@ -10,9 +10,13 @@ internal class HQRNetworkManager : NetworkBehaviour
     public static HQRNetworkManager Instance { get; private set; } = null!;
 
     private const bool default_tier3pass = false;
-    private const int default_bottomLine = -1;
     public NetworkVariable<bool> tier3pass = new(default_tier3pass);
+
+    private const int default_bottomLine = -1;
     public NetworkVariable<int> bottomLine = new(default_bottomLine); 
+
+    private const int default_itemCount = 0;
+    public NetworkVariable<int> itemCount = new(default_itemCount);
 
     public static void CreateAndRegisterPrefab()
     {
@@ -63,5 +67,74 @@ internal class HQRNetworkManager : NetworkBehaviour
     {
         Patches.TerminalHelper.terminal.groupCredits = groupCredits;
         Patches.TerminalHelper.terminal.SyncGroupCreditsClientRpc(groupCredits, Patches.TerminalHelper.terminal.numberOfItemsInDropship);
+    }
+
+    [ClientRpc]
+    public void GrabMaskClientRpc(NetworkObjectReference maskedEnemyAINetObjRef, NetworkObjectReference maskItemNetObjRef)
+    {
+        if (!maskedEnemyAINetObjRef.TryGet(out NetworkObject maskedEnemyAI))
+        {
+            HQRebalance.Logger.LogError("TryGet maskedEnemyAI from NetObjRef failed");
+            return;
+        }
+        if (!maskItemNetObjRef.TryGet(out NetworkObject maskItem))
+        {
+            HQRebalance.Logger.LogError("TryGet maskItem from NetObjRef failed");
+            return;
+        }
+
+        HauntedMaskItem mask = maskItem.GetComponent<HauntedMaskItem>();
+        if (mask == null)
+        {
+            HQRebalance.Logger.LogError("Mask in GrabMask function did not have HauntedMaskItem component.");
+            return;
+        }
+        MaskedPlayerEnemy masked = maskedEnemyAI.GetComponent<MaskedPlayerEnemy>();
+        if (masked == null)
+        {
+            HQRebalance.Logger.LogError("Masked in GrabMask function did not have MaskedPLayerEnemy component.");
+            return;
+        }
+
+        Patches.MaskedPlayerEnemyHelper.masks[masked] = mask;
+        masked.maskTypes[0].SetActive(value: false);
+        mask.transform.localScale = new Vector3(0.13f, 0.13f, 0.13f);
+
+        mask.SetScrapValue(45);
+        mask.isHeldByEnemy = true;
+        mask.grabbableToEnemies = false;
+        mask.grabbable = false;
+    }
+
+    [ClientRpc]
+    public void DropMaskClientRpc(NetworkObjectReference maskedEnemyAINetObjRef, NetworkObjectReference maskItemNetObjRef)
+    {
+        if (!maskedEnemyAINetObjRef.TryGet(out NetworkObject maskedEnemyAI))
+        {
+            HQRebalance.Logger.LogError("TryGet maskedEnemyAI from NetObjRef failed");
+            return;
+        }
+        if (!maskItemNetObjRef.TryGet(out NetworkObject maskItem))
+        {
+            HQRebalance.Logger.LogError("TryGet maskItem from NetObjRef failed");
+            return;
+        }
+
+        HauntedMaskItem mask = maskItem.GetComponent<HauntedMaskItem>();
+        if (mask == null)
+        {
+            HQRebalance.Logger.LogError("Mask in GrabMask function did not have HauntedMaskItem component.");
+            return;
+        }
+        MaskedPlayerEnemy masked = maskedEnemyAI.GetComponent<MaskedPlayerEnemy>();
+        if (masked == null)
+        {
+            HQRebalance.Logger.LogError("Masked in GrabMask function did not have MaskedPLayerEnemy component.");
+            return;
+        }
+
+        mask.isHeldByEnemy = false;
+        mask.grabbableToEnemies = true;
+        mask.grabbable = true;
     }
 }

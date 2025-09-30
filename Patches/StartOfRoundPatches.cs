@@ -21,6 +21,7 @@ internal class StartOfRoundPatches
         daysClearedInARow = 0;
         HQRebalance.Instance.SetupMoons(__instance);
         UnityEngine.Resources.FindObjectsOfTypeAll<CaveDwellerAI>()[0].enemyType.increasedChanceInterior = -1;
+        MaskedPlayerEnemyHelper.PopulateMaskPrefabs();
     }
 
     [HarmonyPatch(nameof(StartOfRound.ShipHasLeft))]

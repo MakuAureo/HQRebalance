@@ -40,6 +40,17 @@ internal class RoundManagerPatches
         {
             StartOfRound.Instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.MaxCount = RoundManagerHelper.saveMaxEnemyCount;
         }
+
+        ButlerEnemyAIPatches.knifeIcons.Clear();
+        MaskedPlayerEnemyHelper.masks.Clear();
+    }
+
+    [HarmonyPatch(nameof(RoundManager.DespawnPropsAtEndOfRound))]
+    [HarmonyPostfix]
+    private static void PostDespawnPropsAtEndOfRound(RoundManager __instance)
+    {
+        ButlerEnemyAIPatches.knifeIcons.Clear();
+        MaskedPlayerEnemyHelper.masks.Clear();
     }
 
     [HarmonyPatch(nameof(RoundManager.SpawnScrapInLevel))]
@@ -242,7 +253,6 @@ internal static class RoundManagerHelper
     public static void OverwriteRushCode(RoundManager instance)
     {
         System.Random rng = new(StartOfRound.Instance.randomMapSeed + 2145);
-        //int chance = 100;
         int chance = (StartOfRoundPatches.daysClearedInARow >= 3) ? 20 : 4;
 
         if (rng.Next(0, 100) < chance)
@@ -253,12 +263,9 @@ internal static class RoundManagerHelper
 
             for (int i = 0; i < instance.currentLevel.Enemies.Count; i++)
             {
-                if (instance.currentLevel.Enemies[i].enemyType.enemyName == "Nutcracker")
-                {
-                    enem.Add(i);
-                    found = true;;
-                }
-                if (instance.currentLevel.Enemies[i].enemyType.enemyName == "Butler")
+                if (instance.currentLevel.Enemies[i].enemyType.enemyName == "Nutcracker" || 
+                    instance.currentLevel.Enemies[i].enemyType.enemyName == "Butler" ||
+                    instance.currentLevel.Enemies[i].enemyType.enemyName == "Masked")
                 {
                     enem.Add(i);
                     found = true;;

@@ -60,7 +60,7 @@ internal class DungeonGeneratorPatches
             GlobalProp[] allProps = tile.GetComponentsInChildren<GlobalProp>();
             foreach (GlobalProp prop in allProps)
             {
-                if (prop.PropGroupID == 1231)
+                if (prop.PropGroupID == DungeonGeneratorHelper.FireExitGroupID)
                 {
                     prop.DepthWeightScale = new AnimationCurve(currDungeonKeyframes);
                 }
@@ -103,9 +103,10 @@ internal class DungeonGeneratorPatches
 
 internal static class DungeonGeneratorHelper
 {
+    public const int FireExitGroupID = 1231;
+
     public static float GetNormalizedPathDepthForFireExit(Tile currTile, GlobalProp currProp)
     {
-        const int FireExitGroupID = 1231;
         return (currProp.PropGroupID == FireExitGroupID) ? (currTile.Placement.NormalizedPathDepth) : (currTile.Placement.NormalizedDepth);
     }
 }
