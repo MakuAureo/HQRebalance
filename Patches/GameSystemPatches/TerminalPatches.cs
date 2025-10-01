@@ -90,7 +90,8 @@ internal class TerminalPatches
             objValue += 35 * ButlerEnemyAIPatches.knifeCount;
             objCount += ButlerEnemyAIPatches.knifeCount;
             int mult = (objCount > 5) ? 2 : 1;
-            objValue = mult * (int)((double)objValue * (0.1f * random.NextDouble() + 0.95f));
+            double noise = (objCount > 5) ? (0.1f * random.NextDouble() + 0.95f) : 1f;
+            objValue = mult * (int)((double)objValue * noise);
             modifiedDisplayText = modifiedDisplayText.Replace("[scanForItems]", $"There are {objCount} objects outside the ship, totalling at an approximate value of ${objValue}.");
             return;
         }

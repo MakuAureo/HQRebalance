@@ -32,7 +32,7 @@ internal class ButlerEnemyAIPatches
         if (knifeIcons.TryGetValue(__instance, out KnifeIconInfo knifeIcon))
             knifeIcon.radarIcon.position = knifeIcon.knifeTransform.position;
         else
-            HQRebalance.Logger.LogError("Could not find icon to update");
+            HQRebalance.Logger.LogWarning("Could not find icon to update");
     }
 
     [HarmonyPatch(nameof(ButlerEnemyAI.KillEnemy))]
@@ -44,7 +44,7 @@ internal class ButlerEnemyAIPatches
             knifeCount--;
         }
         else
-            HQRebalance.Logger.LogError("Could not find icon to destroy");
+            HQRebalance.Logger.LogWarning("Could not find icon to destroy");
     }
 
     [HarmonyPatch(nameof(ButlerEnemyAI.OnCollideWithPlayer))]
@@ -55,8 +55,8 @@ internal class ButlerEnemyAIPatches
     }
 }
 
-public class KnifeIconInfo
+struct KnifeIconInfo
 {
-    public Transform radarIcon = null!;
-    public Transform knifeTransform = null!;
+    public Transform radarIcon;
+    public Transform knifeTransform;
 }

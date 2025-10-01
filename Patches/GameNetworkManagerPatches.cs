@@ -35,5 +35,9 @@ internal class GameNetworkManagerPatches
     private static void PreDisconnect(GameNetworkManager __instance)
     {
         Networking.HQRNetworkManager.DespawnNetworkHandler();
+
+        ButlerEnemyAIPatches.knifeCount = 0;
+        ButlerEnemyAIPatches.knifeIcons.Clear();
+        MaskedPlayerEnemyHelper.masks.Clear();
     }
 }

@@ -21,7 +21,7 @@ internal class StartOfRoundPatches
         daysClearedInARow = 0;
         HQRebalance.Instance.SetupMoons(__instance);
         UnityEngine.Resources.FindObjectsOfTypeAll<CaveDwellerAI>()[0].enemyType.increasedChanceInterior = -1;
-        MaskedPlayerEnemyHelper.PopulateMaskPrefabs();
+        MaskedPlayerEnemyHelper.PopulateMaskedPlayerEnemyHelperInfo();
     }
 
     [HarmonyPatch(nameof(StartOfRound.ShipHasLeft))]
@@ -40,7 +40,6 @@ internal class StartOfRoundPatches
     [HarmonyPrefix]
     private static void PreEndOfGameClientRpc(StartOfRound __instance, int scrapCollectedOnServer)
     {
-        ButlerEnemyAIPatches.knifeCount = 0;
         RoundManager.Instance.totalScrapValueInLevel = Networking.HQRNetworkManager.Instance.bottomLine.Value;
 
         if (__instance.currentLevel.spawnEnemiesAndScrap)

@@ -13,23 +13,22 @@ internal class RoundManagerPatches
     {
         __instance.enemyRushIndex = -1;
 
-        const double minSize = 0.65f; //65% is mines
-        const double midSize = (1 - minSize) * 0.5f;
+        const double minesSize = 0.65f; //65% is mines
+        const double facilityDelta = 0.05f; //How much bigger 2nd facility is than the 1st
 
-        const double delta = 0.05f; //How much bigger 2nd facility is than the 1st
-        const double halfDelta = delta * 0.5f;
-        const double fa1Size = midSize - halfDelta;
-        const double fa2Size = midSize + halfDelta;
+        const double facilitySize = 1 - minesSize;
+        const double facility1Size = (facilitySize - facilityDelta) * 0.5f;
+        const double facility2Size = (facilitySize + facilityDelta) * 0.5f;
 
         __instance.dungeonFlowTypes[4].MapTileSize = 1.1f;
 
-        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[0].Length = (float)fa1Size;
+        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[0].Length = (float)facility1Size;
 
-        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[1].Length = (float)minSize;
-        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[1].Position = (float)fa1Size;
+        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[1].Length = (float)minesSize;
+        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[1].Position = (float)facility1Size;
 
-        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[2].Length = (float)fa2Size;
-        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[2].Position = (float)(fa1Size + minSize);
+        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[2].Length = (float)facility2Size;
+        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[2].Position = (float)(facility1Size + minesSize);
     }
 
     [HarmonyPatch(nameof(RoundManager.OnDestroy))]
@@ -40,15 +39,13 @@ internal class RoundManagerPatches
         {
             StartOfRound.Instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.MaxCount = RoundManagerHelper.saveMaxEnemyCount;
         }
-
-        ButlerEnemyAIPatches.knifeIcons.Clear();
-        MaskedPlayerEnemyHelper.masks.Clear();
     }
 
     [HarmonyPatch(nameof(RoundManager.DespawnPropsAtEndOfRound))]
     [HarmonyPostfix]
     private static void PostDespawnPropsAtEndOfRound(RoundManager __instance)
     {
+        ButlerEnemyAIPatches.knifeCount = 0;
         ButlerEnemyAIPatches.knifeIcons.Clear();
         MaskedPlayerEnemyHelper.masks.Clear();
     }

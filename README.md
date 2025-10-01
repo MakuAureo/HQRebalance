@@ -1,9 +1,9 @@
-# HighQuotaRebalanced_Beta
- THIS MOD IS CURRENTLY IN BETA, MEANING IT IS **NOT** FEATURE COMPLETE AND STILL SOMEWHAT BUGGY
- It also is not compatible with mods that add new items or change the vanilla moons in some way. There will be a config for full release allowing you toggle different patches. For now, don't expect this mod to work with other mods that also apply changes to the vanilla moons.
+# HighQuotaRebalanced Beta
+Due to how changes are implemented this mod is not compatible with mods that add new items, new enemies or change the vanilla moons in some way.
+There will be a config for full release allowing you toggle different patches. 
 
 ## Description
-HQR is meant to keep the vanilla feeling of the game with changes that make high quota more varied and more enjoyable to play by adding more emphasis on player choice and ways to counter enemies.
+HQR is meant to keep the vanilla feeling of the game with changes that make high quota more varied and more enjoyable to play by adding more emphasis on player choice and scalling difficulty.
 
 ## Change list
 ### Player changes:
@@ -18,11 +18,11 @@ HQR is meant to keep the vanilla feeling of the game with changes that make high
     - Minesahft: fire exit will spawn on the otehr side of caves
 
 ### Terminal changes:
-- The `scan` command is not more accurate to the real value
+- The `scan` command is now more accurate to the real value
 
 ### Jester changes:
 - Jester's follow timer scales with map size: `followTimer = 30*mapSize - Random(0.0, 10.0)`
-- Jester's hitbox is no longer solid and can be walked through
+- Jester's hitbox is no longer solid and can be ran through
 
 ### Maneater changes:
 - Maneater takes multiple hit points of damage from sources that deal more than 1 damage (shotgun, landmines, etc...)
@@ -38,6 +38,11 @@ HQR is meant to keep the vanilla feeling of the game with changes that make high
 - Knives show up on the monitor and counts towards outside items when using the terminal's `scan` command while the butler is alive
 - Knives from both alive and dead butlers are included in the total value displayed at the end of the day
 
+### Masked changes:
+- Masked now wears a mask item instead of a mesh, that can be grabbed upon death, similar to Nutcracker's shotgun
+- Masked will drop the player's items when converting them
+- Converted maskeds will have the correct suit and also be tracked correct on the monitor by non-host players
+
 ### Bee changes:
 - Hives are included in the total value displayed at the end of the day
 
@@ -50,7 +55,7 @@ HQR is meant to keep the vanilla feeling of the game with changes that make high
 ### Infestation changes:
 - Infestation has a base 4% chance of happening any day
 - Infestation no longer changes the total power available in the moon
-- Infestation can only chose Nutcrackers or Butlers with an equal chance for both if both can spawn on the moon
+- Infestation can only chose Nutcrackers, Masked or Butlers with an equal chance for all of them, if all can spawn on the moon
 - When choosen as the infestation enemy, they will have unlimited max spawn count
 - Removed the extra +2 spawns per wave
 - During an infestation, when attempting to spawn a new enemy, there's a 60% chance of spawning the current infestation enemy and 40% chance of spawning an enemy using the current moon's spawn distribution
@@ -71,10 +76,13 @@ HQR is meant to keep the vanilla feeling of the game with changes that make high
 - Infestation chances increase to 20% if the crew collected at least 85% of the total value over the last 3 days
 
 ### Moon changes:
+Every Tier 2 or higher moon has been changed to have more scrap or more valuable scrap and a lot more spawns
 - Reworking this section for a wiki instead of using the README (only for the full release)
 
 ## Planned changes
-There are no more planed big changes, now HQR will be play test and adjusted for the best experience before the first full release
+There are no more planed big changes
+
+HQR is in it's playtesting phase to give the best experience before it's first full release (this might change as I iterate on more ideas)
 
 ## Feedback
 If you played this mod and want to give feedback or ideas on how it could be improved message me on discord (makuaureo) or use the proper channel on my [discord server](https://discord.gg/KQPQFGjCeX)

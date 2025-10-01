@@ -22,6 +22,7 @@ internal class PlayerControllerBPatches
         }
 
         __instance.hit = hit;
+
         return false;
     }
 
@@ -29,9 +30,9 @@ internal class PlayerControllerBPatches
     [HarmonyPostfix]
     private static void PostUpdate(PlayerControllerB __instance)
     {
-        if (__instance.transform.position.y <= -80f && __instance.isUnderwater && RoundManager.Instance.currentDungeonType == 4)
+        if (__instance.transform.position.y < -80f && __instance.isUnderwater && RoundManager.Instance.currentDungeonType == 4)
         {
-            __instance.hinderedMultiplier = 0.55f;
+            __instance.hinderedMultiplier = 0.5f;
         }
     }
 }
