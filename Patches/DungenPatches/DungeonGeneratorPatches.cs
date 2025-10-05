@@ -14,8 +14,8 @@ internal class DungeonGeneratorPatches
         public readonly static Keyframe[] facility =
         {
             new Keyframe(0f, 0f, 0f, 0f),
-            new Keyframe(0.3f, 0f, 0.000007952512f, 0.04168295f),
-            new Keyframe(0.45f, 0.1f, 0.000007952512f, 0.04168295f),
+            new Keyframe(0.3f, 0f, 0f, 0.04168295f),
+            new Keyframe(0.45f, 0.1f, 0f, 0.04168295f),
             new Keyframe(0.75f, 1f, 0.02613646f, 0.02613646f),
             new Keyframe(1f, 1f, 0.02613646f, 0.02613646f)
         };
@@ -23,8 +23,8 @@ internal class DungeonGeneratorPatches
         public readonly static Keyframe[] mansion =
         {
             new Keyframe(0f, 0f, 0f, 0f),
-            new Keyframe(0.1f, 0f, 0.000007952512f, 0.04168295f),
-            new Keyframe(0.3f, 0.1f, 0.000007952512f, 0.04168295f),
+            new Keyframe(0.1f, 0f, 0f, 0.04168295f),
+            new Keyframe(0.3f, 0.1f, 0f, 0.04168295f),
             new Keyframe(0.95f, 1f, 0.02613646f, 0.02613646f),
             new Keyframe(1f, 1f, 0.02613646f, 0.02613646f)
         };
@@ -32,8 +32,8 @@ internal class DungeonGeneratorPatches
         public readonly static Keyframe[] mineshaft =
         {
             new Keyframe(0f, 0f, 0f, 0f),
-            new Keyframe(0.4f, 0f, 0.000007952512f, 0.04168295f),
-            new Keyframe(0.7f, 0.1f, 0.000007952512f, 0.04168295f),
+            new Keyframe(0.5f, 0f, 0f, 0.04168295f),
+            new Keyframe(0.7f, 0.1f, 0f, 0.04168295f),
             new Keyframe(0.85f, 1f, 0.02613646f, 0.02613646f),
             new Keyframe(1f, 1f, 0.02613646f, 0.02613646f)
         };

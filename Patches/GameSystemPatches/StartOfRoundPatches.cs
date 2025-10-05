@@ -31,7 +31,7 @@ internal class StartOfRoundPatches
         if (__instance.IsServer || __instance.IsHost)
         {
             int bodies = UnityEngine.Object.FindObjectsOfType<DeadBodyInfo>().Length;
-            Networking.HQRNetworkManager.Instance.bottomLine.Value = __instance.GetValueOfAllScrap(onlyScrapCollected: false, onlyNewScrap: true) + 35 * ButlerEnemyAIPatches.knifeCount - 5 * bodies;
+            Networking.HQRNetworkManager.Instance.bottomLine.Value = __instance.GetValueOfAllScrap(onlyScrapCollected: false, onlyNewScrap: true) + 35 * ButlerEnemyAIPatches.knifeIcons.Count - 5 * bodies;
         }
     }
 

@@ -121,11 +121,7 @@ internal class EnemyPool
             int giant,
             int dog,
             int radmech,
-            int worm,
-            int locust,
-            int manticoil,
-            int tulip,
-            int bee)
+            int worm)
     {
         if (enemyList == null)
         {
@@ -165,6 +161,26 @@ internal class EnemyPool
                 enemyType = EnemyByName("SandWorm"),
                 rarity = worm
             },
+        };
+
+        enemyPool.RemoveAll(i => i.rarity == 0);
+    }
+
+    public EnemyPool(
+            int locust,
+            int manticoil,
+            int tulip,
+            int bee,
+            int bird)
+    {
+        if (enemyList == null)
+        {
+            HQRebalance.Logger.LogError("All enemies list is null");
+            return;
+        }
+
+        enemyPool = new()
+        {
             new SpawnableEnemyWithRarity
             {
                 enemyType = EnemyByName("DocileLocustBees"),
@@ -186,8 +202,6 @@ internal class EnemyPool
                 rarity = bee
             }
         };
-
-        enemyPool.RemoveAll(i => i.rarity == 0);
     }
 
     private EnemyType EnemyByName(string name)

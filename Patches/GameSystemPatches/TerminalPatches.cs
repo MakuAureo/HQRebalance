@@ -87,8 +87,8 @@ internal class TerminalPatches
                     objCount++;
                 }
             }
-            objValue += 35 * ButlerEnemyAIPatches.knifeCount;
-            objCount += ButlerEnemyAIPatches.knifeCount;
+            objValue += 35 * ButlerEnemyAIPatches.knifeIcons.Count;
+            objCount += ButlerEnemyAIPatches.knifeIcons.Count;
             int mult = (objCount > 5) ? 2 : 1;
             double noise = (objCount > 5) ? (0.1f * random.NextDouble() + 0.95f) : 1f;
             objValue = mult * (int)((double)objValue * noise);

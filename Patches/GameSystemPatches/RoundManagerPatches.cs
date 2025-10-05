@@ -45,7 +45,6 @@ internal class RoundManagerPatches
     [HarmonyPostfix]
     private static void PostDespawnPropsAtEndOfRound(RoundManager __instance)
     {
-        ButlerEnemyAIPatches.knifeCount = 0;
         ButlerEnemyAIPatches.knifeIcons.Clear();
         MaskedPlayerEnemyHelper.masks.Clear();
     }

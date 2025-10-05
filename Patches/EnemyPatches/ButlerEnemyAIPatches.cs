@@ -7,7 +7,6 @@ namespace HQRebalance.Patches;
 [HarmonyPatch(typeof(ButlerEnemyAI))]
 internal class ButlerEnemyAIPatches
 {
-    public static int knifeCount = 0;
     public static readonly Dictionary<EnemyAI, KnifeIconInfo> knifeIcons = new();
 
     [HarmonyPatch(nameof(ButlerEnemyAI.Start))]
@@ -19,7 +18,6 @@ internal class ButlerEnemyAIPatches
             radarIcon = UnityEngine.Object.Instantiate(StartOfRound.Instance.itemRadarIconPrefab, RoundManager.Instance.mapPropsContainer.transform).transform,
             knifeTransform = __instance.gameObject.transform.GetChild(1).GetChild(4).GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetChild(0).transform
         });
-        knifeCount++;
     }
 
     [HarmonyPatch(nameof(ButlerEnemyAI.LateUpdate))]
@@ -41,7 +39,6 @@ internal class ButlerEnemyAIPatches
     {
         if (knifeIcons.TryGetValue(__instance, out KnifeIconInfo knifeIcon)) {
             Object.Destroy(knifeIcon.radarIcon.gameObject);
-            knifeCount--;
         }
         else
             HQRebalance.Logger.LogWarning("Could not find icon to destroy");

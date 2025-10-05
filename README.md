@@ -1,28 +1,29 @@
 # HighQuotaRebalanced Beta
-Due to how changes are implemented this mod is not compatible with mods that add new items, new enemies or change the vanilla moons in some way.
-There will be a config for full release allowing you toggle different patches. 
+Due to how changes are implemented, this mod is not compatible with mods that add new items, new enemies or change the vanilla moons in some way.
+There will be a config for full release allowing you toggle different patches.
 
 ## Description
-HQR is meant to keep the vanilla feeling of the game with changes that make high quota more varied and more enjoyable to play by adding more emphasis on player choice and scalling difficulty.
+HQR is meant to keep the vanilla feeling of the game with changes that make high quota more varied and more enjoyable to play by adding more emphasis
+on player choice and scalling difficulty.
 
 ## Change list
 ### Player changes:
 - Re-implement the ability to ledge climb
-- Player's movement speed reduced while crouch through water caves is almost the same as regular crouching
+- Player's movement speed going through water caves is the same as regular crouching
 
 ### Generation changes:
 - Fire exit is more likely to spawn (prevent small mineshaft interiors from having no fire exit, tho it is techinically possible)
 - Fire exit spawning logic changed per interior:
-    - Facility: fire exit will spawn on the other side of maze
+    - Facility: fire exit will spawn decently far from main
     - Mansion: fire exit can still spawn close to main, but not in a dead end
-    - Minesahft: fire exit will spawn on the otehr side of caves
+    - Mineshaft: fire exit will spawn on the otehr side of caves
 
 ### Terminal changes:
 - The `scan` command is now more accurate to the real value
 
 ### Jester changes:
-- Jester's follow timer scales with map size: `followTimer = 30*mapSize - Random(0.0, 10.0)`
-- Jester's hitbox is no longer solid and can be ran through
+- Jester's follow timer scales with map size
+- Jester's hitbox is no longer solid and can be ran through at low weight
 
 ### Maneater changes:
 - Maneater takes multiple hit points of damage from sources that deal more than 1 damage (shotgun, landmines, etc...)
@@ -35,13 +36,13 @@ HQR is meant to keep the vanilla feeling of the game with changes that make high
 
 ### Butler changes:
 - Removed stealth stab
-- Knives show up on the monitor and counts towards outside items when using the terminal's `scan` command while the butler is alive
+- Knives show up on the ship's camera and count towards outside items when using the terminal's `scan` command while the butler is alive
 - Knives from both alive and dead butlers are included in the total value displayed at the end of the day
 
 ### Masked changes:
-- Masked now wears a mask item instead of a mesh, that can be grabbed upon death, similar to Nutcracker's shotgun
+- Masked now wears a mask item instead of a mesh and the mask can be grabbed upon death, similar to Nutcracker's shotgun
 - Masked will drop the player's items when converting them
-- Converted maskeds will have the correct suit and also be tracked correct on the monitor by non-host players
+- Converted maskeds will have the correct suit and also be tracked correctly on the ship's camera by non-host players
 
 ### Bee changes:
 - Hives are included in the total value displayed at the end of the day
@@ -49,21 +50,21 @@ HQR is meant to keep the vanilla feeling of the game with changes that make high
 ### Kiwi bird changes:
 - Eggs are included in the total value displayed at the end of the day
 
-### Ship radar changes:
+### Ship camera changes:
 - Removed "No singal" effect when players are in caves
 
 ### Infestation changes:
-- Infestation has a base 4% chance of happening any day
-- Infestation no longer changes the total power available in the moon
-- Infestation can only chose Nutcrackers, Masked or Butlers with an equal chance for all of them, if all can spawn on the moon
-- When choosen as the infestation enemy, they will have unlimited max spawn count
+- During an infestation, when spawning a new enemy, there's a 60% chance of spawning the current infestation enemy and a 40% chance of spawning an enemy from the current moon's spawn distribution
+- 4% chance of happening any day
+- No longer changes the total max power of the current moon
+- Only Nutcrackers, Maskeds or Butlers can be choosen with an equal chance for all of the enemies that can spawn on the current moon
+- When choosen as the infestation enemy, it will have unlimited max spawn count
 - Removed the extra +2 spawns per wave
-- During an infestation, when attempting to spawn a new enemy, there's a 60% chance of spawning the current infestation enemy and 40% chance of spawning an enemy using the current moon's spawn distribution
 
 ### Luck changes:
-- Luck now increases quota rolls, instead of decreasing
-- Luck doesn't depend on what furniture has been bought, only how many
-- Luck is much more effective in changing rolls
+- Now increases quota rolls, instead of decreasing
+- Now uses how many pieces of furniture is out when the quota is fulfilled, but doesn't depends on what kind of furniture
+- Is much more effective in changing rolls
 
 ### Game changes:
 - Indoor fog is permanently disabled

@@ -36,7 +36,6 @@ internal class GameNetworkManagerPatches
     {
         Networking.HQRNetworkManager.DespawnNetworkHandler();
 
-        ButlerEnemyAIPatches.knifeCount = 0;
         ButlerEnemyAIPatches.knifeIcons.Clear();
         MaskedPlayerEnemyHelper.masks.Clear();
     }

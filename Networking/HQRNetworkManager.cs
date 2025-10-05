@@ -53,21 +53,21 @@ internal class HQRNetworkManager : NetworkBehaviour
         Instance = this;
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [Rpc(SendTo.Server, RequireOwnership = false)]
     public void BuyTier3PassServerRpc()
     {
         tier3pass.Value = true;
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [Rpc(SendTo.Server, RequireOwnership = false)]
     public void SyncTerminalCreditsServerRpc(int groupCredits)
     {
         Patches.TerminalHelper.terminal.groupCredits = groupCredits;
         Patches.TerminalHelper.terminal.SyncGroupCreditsClientRpc(groupCredits, Patches.TerminalHelper.terminal.numberOfItemsInDropship);
     }
 
-    [ClientRpc]
-    public void GrabMaskClientRpc(NetworkObjectReference maskedPlayerEnemyNetObjRef, NetworkObjectReference maskItemNetObjRef, int maskValue = 45)
+    [Rpc(SendTo.Everyone)]
+    public void GrabMaskClientRpc(NetworkObjectReference maskedPlayerEnemyNetObjRef, NetworkObjectReference maskItemNetObjRef, int maskValue = 40)
     {
         if (!maskedPlayerEnemyNetObjRef.TryGet(out NetworkObject maskedPlayerEnemy))
         {
@@ -110,7 +110,7 @@ internal class HQRNetworkManager : NetworkBehaviour
         mask.grabbable = false;
     }
 
-    [ClientRpc]
+    [Rpc(SendTo.Everyone)]
     public void DropMaskClientRpc(NetworkObjectReference maskedPlayerEnemyNetObjRef, NetworkObjectReference maskItemNetObjRef)
     {
         if (!maskedPlayerEnemyNetObjRef.TryGet(out NetworkObject maskedEnemyAI))
