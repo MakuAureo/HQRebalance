@@ -230,10 +230,12 @@ public class HQRebalance : BaseUnityPlugin
 
         //Daytime changes
         Utility.EnemyPool marDaytime = new(39, 20, 4, 100, 0);
+        Utility.EnemyPool adaDaytime = new(30, 40, 6, 35, 5);
         Utility.EnemyPool offDaytime = new(0, 100, 0, 0, 100);
         Utility.EnemyPool artDaytime = new(0, 90, 5, 30, 0);
 
         Instance.patchedMoons[4].DaytimeEnemies = marDaytime.GetEnemyPool();
+        Instance.patchedMoons[5].DaytimeEnemies = adaDaytime.GetEnemyPool();
         Instance.patchedMoons[8].DaytimeEnemies = offDaytime.GetEnemyPool();
         Instance.patchedMoons[10].DaytimeEnemies = artDaytime.GetEnemyPool();
 

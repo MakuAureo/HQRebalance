@@ -21,7 +21,7 @@ internal class MaskedPlayerEnemyPatches
             maskNetObj.Spawn();
 
             NetworkObject maskedNetObj = __instance.GetComponent<NetworkObject>();
-            Networking.HQRNetworkManager.Instance.GrabMaskClientRpc(maskedNetObj, maskNetObj);
+            Network.HQRNetworkManager.Instance.GrabMaskEveryoneRpc(maskedNetObj, maskNetObj);
         }
     }
     
@@ -29,11 +29,12 @@ internal class MaskedPlayerEnemyPatches
     [HarmonyPostfix]
     private static void PostSetMaskGlow(MaskedPlayerEnemy __instance, bool enable)
     {
-        if (!MaskedPlayerEnemyHelper.masks.TryGetValue(__instance, out HauntedMaskItem maskItem))
+        if (!MaskedPlayerEnemyHelper.masks.TryGetValue(__instance, out HauntedMaskItemInfo maskItemInfo))
         {
             HQRebalance.Logger.LogError("Could not find mask to glow");
             return;
         }
+        HauntedMaskItem maskItem = maskItemInfo.mask;
 
         if (enable)
         {
@@ -51,11 +52,18 @@ internal class MaskedPlayerEnemyPatches
     [HarmonyPostfix]
     private static void PostLateUpdate(MaskedPlayerEnemy __instance)
     {
-        if (MaskedPlayerEnemyHelper.masks.TryGetValue(__instance, out HauntedMaskItem maskItem))
+        if (MaskedPlayerEnemyHelper.masks.TryGetValue(__instance, out HauntedMaskItemInfo maskItemInfo))
         {
-            if (maskItem.hasBeenHeld == true)
+            HauntedMaskItem maskItem = maskItemInfo.mask;
+            if (maskItem.hasBeenHeld)
             {
-                maskItem.transform.localScale = new Vector3(0.1646f, 0.1646f, 0.1646f);
+                if (!maskItemInfo.hasBeenHeld)
+                {
+                    maskItemInfo.hasBeenHeld = true;
+                    maskItem.originalScale = new Vector3(0.1646f, 0.1646f, 0.1646f);
+                    maskItem.transform.localScale = maskItem.originalScale;
+                }
+
                 return;
             }
 
@@ -71,14 +79,12 @@ internal class MaskedPlayerEnemyPatches
     [HarmonyPostfix]
     private static void PostKillEnemy(MaskedPlayerEnemy __instance)
     {
-        if (MaskedPlayerEnemyHelper.masks.TryGetValue(__instance, out HauntedMaskItem maskItem))
+        if (MaskedPlayerEnemyHelper.masks.TryGetValue(__instance, out HauntedMaskItemInfo maskItemInfo))
         {
-            if (NetworkManager.Singleton.IsServer)
-            {
-                NetworkObject maskNetObj = maskItem.gameObject.GetComponent<NetworkObject>();
-                NetworkObject maskedNetObj = __instance.GetComponent<NetworkObject>();
-                Networking.HQRNetworkManager.Instance.DropMaskClientRpc(maskedNetObj, maskNetObj);
-            }
+            HauntedMaskItem maskItem = maskItemInfo.mask;
+            maskItem.isHeldByEnemy = false;
+            maskItem.grabbableToEnemies = true;
+            maskItem.grabbable = true;
         }
         else
             HQRebalance.Logger.LogWarning("Could not find mask to drop");
@@ -104,6 +110,12 @@ internal class MaskedPlayerEnemyPatches
     }
 }
 
+struct HauntedMaskItemInfo
+{
+    public HauntedMaskItem mask;
+    public bool hasBeenHeld;
+}
+
 internal static class MaskedPlayerEnemyHelper
 {
     public const int comedyMaskIndex = 0;
@@ -111,7 +123,7 @@ internal static class MaskedPlayerEnemyHelper
 
     public static GameObject comedyPrefab = null!;
     public static GameObject tragedyPrefab = null!;
-    public static readonly Dictionary<EnemyAI, HauntedMaskItem> masks = new();
+    public static readonly Dictionary<EnemyAI, HauntedMaskItemInfo> masks = new();
 
     public static void PopulateMaskedPlayerEnemyHelperInfo()
     {

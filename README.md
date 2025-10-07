@@ -78,12 +78,12 @@ on player choice and scalling difficulty.
 
 ### Moon changes:
 Every Tier 2 or higher moon has been changed to have more scrap or more valuable scrap and a lot more spawns
-- Reworking this section for a wiki instead of using the README (only for the full release)
+- Reworking this section for a wiki instead of using the README (some of them are already there)
 
 ## Planned changes
 There are no more planed big changes
 
-HQR is in it's playtesting phase to give the best experience before it's first full release (this might change as I iterate on more ideas)
+HQR is in playtesting phase make sure it's properly balanced before the first full release (this might change as I iterate on more ideas)
 
 ## Feedback
 If you played this mod and want to give feedback or ideas on how it could be improved message me on discord (makuaureo) or use the proper channel on my [discord server](https://discord.gg/KQPQFGjCeX)

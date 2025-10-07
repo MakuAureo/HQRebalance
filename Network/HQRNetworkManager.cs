@@ -2,7 +2,7 @@ using Unity.Netcode;
 using UnityEngine;
 using static Unity.Netcode.XXHash;
 
-namespace HQRebalance.Networking;
+namespace HQRebalance.Network;
 
 internal class HQRNetworkManager : NetworkBehaviour
 {
@@ -54,20 +54,15 @@ internal class HQRNetworkManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server, RequireOwnership = false)]
-    public void BuyTier3PassServerRpc()
+    public void BuyTier3PassServerRpc(int groupCredits)
     {
         tier3pass.Value = true;
-    }
-
-    [Rpc(SendTo.Server, RequireOwnership = false)]
-    public void SyncTerminalCreditsServerRpc(int groupCredits)
-    {
         Patches.TerminalHelper.terminal.groupCredits = groupCredits;
         Patches.TerminalHelper.terminal.SyncGroupCreditsClientRpc(groupCredits, Patches.TerminalHelper.terminal.numberOfItemsInDropship);
     }
 
     [Rpc(SendTo.Everyone)]
-    public void GrabMaskClientRpc(NetworkObjectReference maskedPlayerEnemyNetObjRef, NetworkObjectReference maskItemNetObjRef, int maskValue = 40)
+    public void GrabMaskEveryoneRpc(NetworkObjectReference maskedPlayerEnemyNetObjRef, NetworkObjectReference maskItemNetObjRef, int maskValue = 40)
     {
         if (!maskedPlayerEnemyNetObjRef.TryGet(out NetworkObject maskedPlayerEnemy))
         {
@@ -99,46 +94,20 @@ internal class HQRNetworkManager : NetworkBehaviour
             return;
         }
 
-        Patches.MaskedPlayerEnemyHelper.masks[masked] = mask;
         masked.maskTypes[0].SetActive(value: false);
         masked.maskTypes[1].SetActive(value: false);
-        mask.transform.localScale = new Vector3(0.13f, 0.13f, 0.13f);
 
+        mask.transform.localScale = new Vector3(0.13f, 0.13f, 0.13f);
         mask.SetScrapValue(maskValue);
         mask.isHeldByEnemy = true;
         mask.grabbableToEnemies = false;
         mask.grabbable = false;
-    }
 
-    [Rpc(SendTo.Everyone)]
-    public void DropMaskClientRpc(NetworkObjectReference maskedPlayerEnemyNetObjRef, NetworkObjectReference maskItemNetObjRef)
-    {
-        if (!maskedPlayerEnemyNetObjRef.TryGet(out NetworkObject maskedEnemyAI))
+        Patches.HauntedMaskItemInfo maskInfo = new()
         {
-            HQRebalance.Logger.LogError("TryGet maskedPlayerEnemy from NetObjRef failed");
-            return;
-        }
-        if (!maskItemNetObjRef.TryGet(out NetworkObject maskItem))
-        {
-            HQRebalance.Logger.LogError("TryGet maskItem from NetObjRef failed");
-            return;
-        }
-
-        HauntedMaskItem mask = maskItem.GetComponent<HauntedMaskItem>();
-        if (mask == null)
-        {
-            HQRebalance.Logger.LogError("Mask in GrabMask function did not have HauntedMaskItem component.");
-            return;
-        }
-        MaskedPlayerEnemy masked = maskedEnemyAI.GetComponent<MaskedPlayerEnemy>();
-        if (masked == null)
-        {
-            HQRebalance.Logger.LogError("Masked in GrabMask function did not have MaskedPlayerEnemy component.");
-            return;
-        }
-
-        mask.isHeldByEnemy = false;
-        mask.grabbableToEnemies = true;
-        mask.grabbable = true;
+            mask = mask,
+            hasBeenHeld = false
+        };
+        Patches.MaskedPlayerEnemyHelper.masks[masked] = maskInfo;
     }
 }

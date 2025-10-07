@@ -10,7 +10,7 @@ internal class GameNetworkManagerPatches
     [HarmonyPostfix]
     private static void PostStart(GameNetworkManager __instance)
     {
-        Networking.HQRNetworkManager.CreateAndRegisterPrefab();
+        Network.HQRNetworkManager.CreateAndRegisterPrefab();
     }
 
     [HarmonyPatch(nameof(GameNetworkManager.SaveGameValues))]
@@ -22,7 +22,7 @@ internal class GameNetworkManagerPatches
 
         try
         {
-            ES3.Save("Tier3Pass", Networking.HQRNetworkManager.Instance.tier3pass.Value, __instance.currentSaveFileName);
+            ES3.Save("Tier3Pass", Network.HQRNetworkManager.Instance.tier3pass.Value, __instance.currentSaveFileName);
         }
         catch (Exception arg)
         {
@@ -34,7 +34,7 @@ internal class GameNetworkManagerPatches
     [HarmonyPrefix]
     private static void PreDisconnect(GameNetworkManager __instance)
     {
-        Networking.HQRNetworkManager.DespawnNetworkHandler();
+        Network.HQRNetworkManager.DespawnNetworkHandler();
 
         ButlerEnemyAIPatches.knifeIcons.Clear();
         MaskedPlayerEnemyHelper.masks.Clear();

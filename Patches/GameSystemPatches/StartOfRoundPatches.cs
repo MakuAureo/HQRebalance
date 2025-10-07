@@ -11,7 +11,7 @@ internal class StartOfRoundPatches
     [HarmonyPrefix]
     private static void PreAwake(StartOfRound __instance)
     {
-        Networking.HQRNetworkManager.SpawnNetworkHandler();
+        Network.HQRNetworkManager.SpawnNetworkHandler();
     }
 
     [HarmonyPatch(nameof(StartOfRound.Start))]
@@ -31,7 +31,7 @@ internal class StartOfRoundPatches
         if (__instance.IsServer || __instance.IsHost)
         {
             int bodies = UnityEngine.Object.FindObjectsOfType<DeadBodyInfo>().Length;
-            Networking.HQRNetworkManager.Instance.bottomLine.Value = __instance.GetValueOfAllScrap(onlyScrapCollected: false, onlyNewScrap: true) + 35 * ButlerEnemyAIPatches.knifeIcons.Count - 5 * bodies;
+            Network.HQRNetworkManager.Instance.bottomLine.Value = __instance.GetValueOfAllScrap(onlyScrapCollected: false, onlyNewScrap: true) + 35 * ButlerEnemyAIPatches.knifeIcons.Count - 5 * bodies;
         }
     }
 
@@ -40,11 +40,11 @@ internal class StartOfRoundPatches
     [HarmonyPrefix]
     private static void PreEndOfGameClientRpc(StartOfRound __instance, int scrapCollectedOnServer)
     {
-        RoundManager.Instance.totalScrapValueInLevel = Networking.HQRNetworkManager.Instance.bottomLine.Value;
+        RoundManager.Instance.totalScrapValueInLevel = Network.HQRNetworkManager.Instance.bottomLine.Value;
 
         if (__instance.currentLevel.spawnEnemiesAndScrap)
         {
-            if ((double)(scrapCollectedOnServer - 5 * __instance.GetBodiesInShip()) / (double)Networking.HQRNetworkManager.Instance.bottomLine.Value > 0.85f)
+            if ((double)(scrapCollectedOnServer - 5 * __instance.GetBodiesInShip()) / (double)Network.HQRNetworkManager.Instance.bottomLine.Value > 0.85f)
                 daysClearedInARow++;
             else
                 daysClearedInARow = 0;
@@ -61,13 +61,13 @@ internal class StartOfRoundPatches
     private static void PostPassTimeToNextDay(StartOfRound __instance)
     {
         if ((__instance.IsServer || __instance.IsHost) && TimeOfDay.Instance.daysUntilDeadline == 0)
-            Networking.HQRNetworkManager.Instance.tier3pass.Value = false;
+            Network.HQRNetworkManager.Instance.tier3pass.Value = false;
     }
 
     [HarmonyPatch(nameof(StartOfRound.SetTimeAndPlanetToSavedSettings))]
     [HarmonyPostfix]
     private static void PostSetTimeAndPlanetToSavedSettings(StartOfRound __instance)
     {
-        Networking.HQRNetworkManager.Instance.tier3pass.Value = ES3.Load("Tier3Pass", GameNetworkManager.Instance.currentSaveFileName, false);
+        Network.HQRNetworkManager.Instance.tier3pass.Value = ES3.Load("Tier3Pass", GameNetworkManager.Instance.currentSaveFileName, false);
     }
 }

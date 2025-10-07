@@ -54,7 +54,7 @@ internal class TerminalPatches
     [HarmonyPrefix]
     private static void PreLoadNewNode(Terminal __instance, ref TerminalNode node)
     {
-        if ((node.name == "85route" || node.name == "7route" || node.name == "8route") && !Networking.HQRNetworkManager.Instance.tier3pass.Value)
+        if ((node.name == "85route" || node.name == "7route" || node.name == "8route") && !Network.HQRNetworkManager.Instance.tier3pass.Value)
         {
             if (node.name == "85route")
                 TerminalHelper.moon = "85-Rend";
@@ -233,8 +233,7 @@ internal static class TerminalHelper
             return "Unable to purchase Cold Moon Pass.\n\n";
         }
 
-        Networking.HQRNetworkManager.Instance.BuyTier3PassServerRpc();
-        Networking.HQRNetworkManager.Instance.SyncTerminalCreditsServerRpc(terminal.groupCredits - TerminalNodes.passConfirm.itemCost);
+        Network.HQRNetworkManager.Instance.BuyTier3PassServerRpc(terminal.groupCredits - TerminalNodes.passConfirm.itemCost);
         TerminalNodes.passConfirm.playSyncedClip = 0;
         return "Cold Moon Pass purchased.\n\n";
     }
