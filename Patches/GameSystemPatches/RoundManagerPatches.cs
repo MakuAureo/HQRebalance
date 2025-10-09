@@ -53,176 +53,69 @@ internal class RoundManagerPatches
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> TranspileSpawnScrapInLevel(IEnumerable<CodeInstruction> codes)
     {
-        CodeMatcher matcher = new(codes);
-
-        matcher.MatchForward(false, new CodeMatch(OpCodes.Ldc_I4_6));
-        if (matcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find the first pattern. Aborting {nameof(RoundManagerPatches.TranspileSpawnScrapInLevel)} transpiler.");
-            return codes;
-        }
-        matcher.SetOpcodeAndAdvance(OpCodes.Ldc_I4_0);
-
-        matcher.MatchForward(false, new CodeMatch(OpCodes.Ldc_I4_S, (sbyte)20));
-        if (matcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find the second pattern. Aborting {nameof(RoundManagerPatches.TranspileSpawnScrapInLevel)} transpiler.");
-            return codes;
-        }
-        matcher.SetOperandAndAdvance(-1);
-
-        return matcher.InstructionEnumeration();
+        return new CodeMatcher(codes)
+            .MatchForward(false, new CodeMatch(OpCodes.Ldc_I4_6))
+            .SetOpcodeAndAdvance(OpCodes.Ldc_I4_0)
+            .MatchForward(false, new CodeMatch(OpCodes.Ldc_I4_S, (sbyte)20))
+            .SetOperandAndAdvance(-1)
+            .InstructionEnumeration();
     }
 
     [HarmonyPatch(nameof(RoundManager.PlotOutEnemiesForNextHour))]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> TranspilePlotOutEnemiesForNextHour(IEnumerable<CodeInstruction> codes)
     {
-        CodeMatcher matcher = new(codes);
-
-        matcher.MatchForward(false,
-                new CodeMatch(OpCodes.Ldloc_1),
-                new CodeMatch(OpCodes.Call, AccessTools.PropertyGetter(typeof(TimeOfDay), nameof(TimeOfDay.Instance)))
-            );
-        if (matcher.IsInvalid)
+        CodeInstruction[] callSteadSpawnIncrease =
         {
-            HQRebalance.Logger.LogError($"Could not find the starting pattern. Aborting {nameof(RoundManagerPatches.TranspilePlotOutEnemiesForNextHour)} transpiler.");
-            return codes;
-        }
-        List<Label> labels = matcher.Instruction.labels;
-        int startIndex = matcher.Pos;
-
-        CodeMatcher endMatcher = matcher.Clone();
-        endMatcher.MatchForward(false, new CodeMatch(OpCodes.Stloc_2));
-        if (endMatcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find the ending pattern. Aborting {nameof(RoundManagerPatches.TranspilePlotOutEnemiesForNextHour)} transpiler.");
-            return codes;
-        }
-        int endIndex = endMatcher.Pos;
-
-        matcher.RemoveInstructionsInRange(startIndex, endIndex);
-        List<CodeInstruction> newIL = new()
-        {
-                new CodeInstruction(OpCodes.Ldloc_1),
-                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(RoundManagerHelper), nameof(RoundManagerHelper.SteadSpawnIncrease))),
-                new CodeInstruction(OpCodes.Add),
-                new CodeInstruction(OpCodes.Stloc_2)
+            new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(RoundManagerHelper), nameof(RoundManagerHelper.SteadSpawnIncrease))),
+            new CodeInstruction(OpCodes.Add),
+            new CodeInstruction(OpCodes.Stloc_2)
         };
-        newIL[0].labels.AddRange(labels);
-        matcher.InsertAndAdvance(newIL);
 
-        matcher.MatchForward(false, new CodeMatch(OpCodes.Ldc_I4_2));
-        if (matcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find the second pattern. Aborting {nameof(RoundManagerPatches.TranspilePlotOutEnemiesForNextHour)} transpiler.");
-            return codes;
-        }
-        matcher.SetOpcodeAndAdvance(OpCodes.Ldc_I4_0);
-
-        return matcher.InstructionEnumeration();
+        return new CodeMatcher(codes)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Ldloc_1),
+                new CodeMatch(OpCodes.Call, AccessTools.PropertyGetter(typeof(TimeOfDay), nameof(TimeOfDay.Instance))))
+            .Advance(1)
+            .RemoveInstructions(10)
+            .InsertAndAdvance(callSteadSpawnIncrease)
+            .MatchForward(false, new CodeMatch(OpCodes.Ldc_I4_2))
+            .SetOpcodeAndAdvance(OpCodes.Ldc_I4_0)
+            .InstructionEnumeration();
     }
 
     [HarmonyPatch(nameof(RoundManager.RefreshEnemiesList))]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> TranspileRefreshEnemyList(IEnumerable<CodeInstruction> codes)
     {
-        CodeMatcher matcher = new(codes);
-
-        matcher.MatchForward(false, new CodeMatch(OpCodes.Ldloca_S));
-        if (matcher.IsInvalid)
+        CodeInstruction[] callOverwriteRushCode =
         {
-            HQRebalance.Logger.LogError($"Could not find the starting pattern. Aborting {nameof(RoundManagerPatches.TranspileRefreshEnemyList)} transpiler.");
-            return codes;
-        }
-        int startIndex = matcher.Pos;
+            new CodeInstruction(OpCodes.Ldarg_0),
+            new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(RoundManagerHelper), nameof(RoundManagerHelper.OverwriteRushCode)))
+        };
 
-        CodeMatcher endMatcher = matcher.Clone();
-        endMatcher.End().MatchBack(true, new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(UnityEngine.GameObject), nameof(UnityEngine.GameObject.SetActive))));
-        if (endMatcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find the ending pattern. Aborting {nameof(RoundManagerPatches.TranspileRefreshEnemyList)} transpiler.");
-            return codes;
-        }
-        int endIndex = endMatcher.Pos;
-
-        if (startIndex >= endIndex)
-        {
-            HQRebalance.Logger.LogWarning("Start and end patterns are the same or in the wrong order. Nothing to remove.");
-            return codes;
-        }
-
-        matcher.RemoveInstructionsInRange(startIndex, endIndex);
-        matcher.InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldarg_0),
-                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(RoundManagerHelper), nameof(RoundManagerHelper.OverwriteRushCode)))
-            );
-
-        return matcher.InstructionEnumeration();
+        return new CodeMatcher(codes)
+            .MatchForward(false, new CodeMatch(OpCodes.Ldloca_S))
+            .RemoveInstructions(152)
+            .Insert(callOverwriteRushCode)
+            .InstructionEnumeration();
     }
 
     [HarmonyPatch(nameof(RoundManager.AssignRandomEnemyToVent))]
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> TranspileAssignRandomEnemyToVent(IEnumerable<CodeInstruction> codes)
     {
-        CodeMatcher matcher = new(codes);
-
-        matcher.MatchForward(false,
-                new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(RoundManager), nameof(RoundManager.enemyRushIndex))),
-                new CodeMatch(OpCodes.Ldc_I4_M1)
-            );
-        if (matcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find the starting pattern. Aborting {nameof(RoundManagerPatches.TranspileAssignRandomEnemyToVent)} transpiler.");
-            return codes;
-        }
-        int startIndex = matcher.Pos;
-
-        CodeMatcher endMatcher = matcher.Clone();
-        endMatcher.End().MatchBack(true, new CodeMatch(OpCodes.Stloc_S));
-        if (endMatcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find the ending pattern. Aborting {nameof(RoundManagerPatches.TranspileAssignRandomEnemyToVent)} transpiler.");
-            return codes;
-        }
-        int endIndex = endMatcher.Pos;
-
-        matcher.RemoveInstructionsInRange(startIndex, endIndex);
-        matcher.InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldarg_0),
-                new CodeInstruction(OpCodes.Ldloc_1),
-                new CodeInstruction(OpCodes.Ldloc_3),
-                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(RoundManagerHelper), nameof(RoundManagerHelper.SpawnProbabilityCode))),
-                new CodeInstruction(OpCodes.Stloc_S, (sbyte)4)
-            );
-
-        matcher.MatchForward(false,
-                new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldarg_0)
-            );
-        if (matcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find the starting pattern2. Aborting {nameof(RoundManagerPatches.TranspileAssignRandomEnemyToVent)} transpiler.");
-            return codes;
-        }
-        startIndex = matcher.Pos;
-        List<Label> labels = matcher.Instruction.labels;
-
-        endMatcher = matcher.Clone();
-        endMatcher.MatchForward(true, new CodeMatch(OpCodes.Stloc_2));
-        if (endMatcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find the ending pattern2. Aborting {nameof(RoundManagerPatches.TranspileAssignRandomEnemyToVent)} transpiler.");
-            return codes;
-        }
-        endIndex = endMatcher.Pos;
-
-        matcher.RemoveInstructionsInRange(startIndex, endIndex);
-        List<CodeInstruction> newIL = new()
+        CodeInstruction[] callSpawnProbabilityCodeAndStore =
         {
             new CodeInstruction(OpCodes.Ldarg_0),
-            new CodeInstruction(OpCodes.Ldarg_0),
+            new CodeInstruction(OpCodes.Ldloc_1),
+            new CodeInstruction(OpCodes.Ldloc_3),
+            new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(RoundManagerHelper), nameof(RoundManagerHelper.SpawnProbabilityCode))),
+            new CodeInstruction(OpCodes.Stloc_S, (sbyte)4)
+        };
+
+        CodeInstruction[] getModifiedRandomWeightedIndex =
+        {
             new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(RoundManager), nameof(RoundManager.SpawnProbabilities))),
             new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(List<int>), nameof(List<int>.ToArray))),
             new CodeInstruction(OpCodes.Ldarg_0),
@@ -230,10 +123,21 @@ internal class RoundManagerPatches
             new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(RoundManagerHelper), nameof(RoundManagerHelper.GetModifiedRandomWeightedIndex))),
             new CodeInstruction(OpCodes.Stloc_2)
         };
-        newIL[0].labels.AddRange(labels);
-        matcher.InsertAndAdvance(newIL);
 
-        return matcher.InstructionEnumeration();
+        return new CodeMatcher(codes)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(RoundManager), nameof(RoundManager.enemyRushIndex))),
+                new CodeMatch(OpCodes.Ldc_I4_M1))
+            .RemoveInstructions(83)
+            .InsertAndAdvance(callSpawnProbabilityCodeAndStore)
+            .MatchForward(false,
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldarg_0))
+            .Advance(2)
+            .RemoveInstructions(6)
+            .Insert(getModifiedRandomWeightedIndex)
+            .InstructionEnumeration();
     }
 }
 
@@ -259,12 +163,12 @@ internal static class RoundManagerHelper
 
             for (int i = 0; i < instance.currentLevel.Enemies.Count; i++)
             {
-                if (instance.currentLevel.Enemies[i].enemyType.enemyName == "Nutcracker" || 
+                if (instance.currentLevel.Enemies[i].enemyType.enemyName == "Nutcracker" ||
                     instance.currentLevel.Enemies[i].enemyType.enemyName == "Butler" ||
                     instance.currentLevel.Enemies[i].enemyType.enemyName == "Masked")
                 {
                     enem.Add(i);
-                    found = true;;
+                    found = true; ;
                 }
             }
 

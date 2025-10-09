@@ -200,6 +200,11 @@ internal class EnemyPool
             {
                 enemyType = EnemyByName("RedLocustBees"),
                 rarity = bee
+            },
+            new SpawnableEnemyWithRarity
+            {
+                enemyType = EnemyByName("GiantKiwi"),
+                rarity = bird
             }
         };
     }

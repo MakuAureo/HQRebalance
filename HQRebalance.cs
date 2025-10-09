@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
+using HQRebalance.Utility;
 
 namespace HQRebalance;
 
@@ -204,17 +205,17 @@ public class HQRebalance : BaseUnityPlugin
         Instance.patchedMoons[9].spawnableMapObjects[2].numberToSpawn = lowSpawn;
 
         //Lootpool changes
-        Utility.LootPool expLoot = new(13, 0, 80, 29, 0, 2, 6, 0, 0, 13, 0, 0, 5, 32, 9, 10, 0, 42, 0, 17, 1, 0, 0, 22, 25, 80, 11, 0, 0, 66, 0, 0, 0, 0, 4, 8, 12, 0, 0, 8, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 0, 6, 1);
-        Utility.LootPool assLoot = new(19, 18, 59, 100, 26, 0, 6, 0, 0, 19, 15, 12, 49, 0, 36, 34, 0, 10, 39, 18, 0, 0, 7, 14, 23, 35, 8, 0, 21, 23, 12, 7, 0, 0, 7, 19, 10, 12, 13, 0, 0, 23, 19, 34, 32, 0, 19, 0, 31, 6, 0, 3, 40, 11, 17, 1);
-        Utility.LootPool vowLoot = new(35, 33, 31, 54, 46, 0, 8, 51, 0, 35, 0, 12, 29, 0, 28, 39, 0, 30, 27, 20, 0, 0, 0, 8, 27, 25, 8, 0, 29, 16, 24, 11, 0, 0, 5, 22, 30, 19, 12, 0, 24, 22, 17, 40, 40, 0, 34, 0, 13, 7, 0, 0, 25, 6, 16, 1);
-        Utility.LootPool marLoot = new(43, 0, 72, 48, 0, 2, 4, 0, 0, 43, 0, 11, 24, 0, 65, 0, 0, 42, 20, 24, 5, 0, 0, 0, 0, 49, 6, 0, 19, 42, 0, 6, 0, 0, 21, 27, 28, 4, 13, 0, 0, 19, 0, 29, 24, 0, 32, 0, 18, 9, 0, 0, 60, 0, 8, 1);
-        Utility.LootPool offLoot = new(18, 0, 89, 63, 0, 0, 0, 0, 6, 18, 61, 40, 16, 0, 19, 0, 0, 40, 31, 19, 0, 0, 3, 17, 0, 67, 10, 0, 20, 65, 0, 8, 0, 0, 23, 19, 28, 0, 15, 0, 0, 0, 0, 27, 24, 11, 18, 0, 19, 9, 6, 61, 80, 0, 28, 1);
-        Utility.LootPool adaLoot = new(24, 57, 31, 68, 36, 0, 9, 52, 0, 24, 0, 31, 40, 0, 50, 29, 0, 30, 13, 23, 0, 0, 0, 21, 28, 27, 17, 0, 25, 16, 13, 9, 0, 0, 19, 24, 32, 17, 24, 0, 25, 0, 6, 40, 32, 0, 40, 0, 17, 9, 0, 0, 29, 14, 16, 1);
-        Utility.LootPool renLoot = new(19, 44, 0, 6, 0, 3, 38, 0, 12, 19, 63, 5, 0, 0, 21, 0, 85, 0, 7, 82, 0, 14, 93, 0, 4, 0, 13, 23, 35, 0, 18, 17, 85, 89, 0, 0, 9, 17, 0, 19, 16, 28, 0, 0, 11, 91, 61, 0, 52, 73, 94, 63, 0, 0, 0, 1);
-        Utility.LootPool dinLoot = new(40, 47, 0, 18, 0, 3, 41, 0, 0, 40, 27, 0, 0, 0, 44, 0, 80, 0, 8, 41, 0, 62, 73, 0, 12, 12, 55, 24, 14, 0, 48, 37, 80, 67, 0, 0, 5, 50, 0, 67, 25, 0, 0, 0, 11, 56, 7, 21, 33, 94, 0, 27, 19, 0, 0, 1);
-        Utility.LootPool titLoot = new(39, 37, 47, 33, 0, 0, 0, 0, 0, 39, 43, 0, 0, 0, 0, 0, 31, 0, 0, 23, 0, 33, 45, 0, 8, 38, 10, 16, 35, 0, 21, 22, 51, 14, 0, 0, 16, 38, 0, 36, 24, 0, 0, 0, 30, 21, 8, 36, 20, 35, 0, 46, 28, 0, 0, 1);
-        Utility.LootPool artLoot = new(39, 76, 0, 17, 0, 0, 32, 0, 69, 39, 57, 0, 0, 0, 19, 0, 63, 0, 14, 24, 32, 55, 75, 0, 33, 16, 53, 30, 42, 0, 35, 25, 72, 33, 0, 0, 16, 20, 0, 65, 60, 39, 0, 0, 30, 53, 42, 42, 22, 71, 35, 57, 30, 0, 0, 12);
-        Utility.LootPool embLoot = new(23, 0, 66, 52, 0, 0, 0, 0, 0, 18, 0, 14, 52, 0, 52, 0, 0, 0, 0, 17, 0, 0, 0, 9, 0, 81, 6, 0, 14, 100, 0, 8, 0, 0, 0, 0, 28, 0, 28, 0, 0, 26, 0, 28, 23, 12, 45, 0, 25, 43, 0, 0, 80, 0, 14, 1);
+        LootPool expLoot = new(13, 0, 80, 29, 0, 2, 6, 0, 0, 13, 0, 0, 5, 32, 9, 10, 0, 42, 0, 17, 1, 0, 0, 22, 25, 80, 11, 0, 0, 66, 0, 0, 0, 0, 4, 8, 12, 0, 0, 8, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 0, 6, 1);
+        LootPool assLoot = new(19, 18, 59, 100, 26, 0, 6, 0, 0, 19, 15, 12, 49, 0, 36, 34, 0, 10, 39, 18, 0, 0, 7, 14, 23, 35, 8, 0, 21, 23, 12, 7, 0, 0, 7, 19, 10, 12, 13, 0, 0, 23, 19, 34, 32, 0, 19, 0, 31, 6, 0, 3, 40, 11, 17, 1);
+        LootPool vowLoot = new(35, 33, 31, 54, 46, 0, 8, 51, 0, 35, 0, 12, 29, 0, 28, 39, 0, 30, 27, 20, 0, 0, 0, 8, 27, 25, 8, 0, 29, 16, 24, 11, 0, 0, 5, 22, 30, 19, 12, 0, 24, 22, 17, 40, 40, 0, 34, 0, 13, 7, 0, 0, 25, 6, 16, 1);
+        LootPool marLoot = new(43, 0, 72, 48, 0, 2, 4, 0, 0, 43, 0, 11, 24, 0, 65, 0, 0, 42, 20, 24, 5, 0, 0, 0, 0, 49, 6, 0, 19, 42, 0, 6, 0, 0, 21, 27, 28, 4, 13, 0, 0, 19, 0, 29, 24, 0, 32, 0, 18, 9, 0, 0, 60, 0, 8, 1);
+        LootPool offLoot = new(18, 0, 89, 63, 0, 0, 0, 0, 6, 18, 61, 40, 16, 0, 19, 0, 0, 40, 31, 19, 0, 0, 3, 17, 0, 67, 10, 0, 20, 65, 0, 8, 0, 0, 23, 19, 28, 0, 15, 0, 0, 0, 0, 27, 24, 11, 18, 0, 19, 9, 6, 61, 80, 0, 28, 1);
+        LootPool adaLoot = new(24, 57, 31, 68, 36, 0, 9, 52, 0, 24, 0, 31, 40, 0, 50, 29, 0, 30, 13, 23, 0, 0, 0, 21, 28, 27, 17, 0, 25, 16, 13, 9, 0, 0, 19, 24, 32, 17, 24, 0, 25, 0, 6, 40, 32, 0, 40, 0, 17, 9, 0, 0, 29, 14, 16, 1);
+        LootPool renLoot = new(19, 44, 0, 6, 0, 3, 38, 0, 12, 19, 63, 5, 0, 0, 21, 0, 85, 0, 7, 82, 0, 14, 93, 0, 4, 0, 13, 23, 35, 0, 18, 17, 85, 89, 0, 0, 9, 17, 0, 19, 16, 28, 0, 0, 11, 91, 61, 0, 52, 73, 94, 63, 0, 0, 0, 1);
+        LootPool dinLoot = new(40, 47, 0, 18, 0, 3, 41, 0, 0, 40, 27, 0, 0, 0, 44, 0, 80, 0, 8, 41, 0, 62, 73, 0, 12, 12, 55, 24, 14, 0, 48, 37, 80, 67, 0, 0, 5, 50, 0, 67, 25, 0, 0, 0, 11, 56, 7, 21, 33, 94, 0, 27, 19, 0, 0, 1);
+        LootPool titLoot = new(39, 37, 47, 33, 0, 0, 0, 0, 0, 39, 43, 0, 0, 0, 0, 0, 31, 0, 0, 23, 0, 33, 45, 0, 8, 38, 10, 16, 35, 0, 21, 22, 51, 14, 0, 0, 16, 38, 0, 36, 24, 0, 0, 0, 30, 21, 8, 36, 20, 35, 0, 46, 28, 0, 0, 1);
+        LootPool artLoot = new(39, 76, 0, 17, 0, 0, 32, 0, 69, 39, 57, 0, 0, 0, 19, 0, 63, 0, 14, 24, 32, 55, 75, 0, 33, 16, 53, 30, 42, 0, 35, 25, 72, 33, 0, 0, 16, 20, 0, 65, 60, 39, 0, 0, 30, 53, 42, 42, 22, 71, 35, 57, 30, 0, 0, 12);
+        LootPool embLoot = new(23, 0, 66, 52, 0, 0, 0, 0, 0, 18, 0, 14, 52, 0, 52, 0, 0, 0, 0, 17, 0, 0, 0, 9, 0, 81, 6, 0, 14, 100, 0, 8, 0, 0, 0, 0, 28, 0, 28, 0, 0, 26, 0, 28, 23, 12, 45, 0, 25, 43, 0, 0, 80, 0, 14, 1);
 
         Instance.patchedMoons[0].spawnableScrap = expLoot.GetLootpool();
         Instance.patchedMoons[1].spawnableScrap = assLoot.GetLootpool();
@@ -229,10 +230,10 @@ public class HQRebalance : BaseUnityPlugin
         Instance.patchedMoons[12].spawnableScrap = embLoot.GetLootpool();
 
         //Daytime changes
-        Utility.EnemyPool marDaytime = new(39, 20, 4, 100, 0);
-        Utility.EnemyPool adaDaytime = new(30, 40, 6, 35, 5);
-        Utility.EnemyPool offDaytime = new(0, 100, 0, 0, 100);
-        Utility.EnemyPool artDaytime = new(0, 90, 5, 30, 0);
+        EnemyPool marDaytime = new(39, 20, 4, 100, 0);
+        EnemyPool adaDaytime = new(30, 40, 6, 35, 5);
+        EnemyPool offDaytime = new(0, 100, 0, 0, 100);
+        EnemyPool artDaytime = new(0, 90, 5, 30, 0);
 
         Instance.patchedMoons[4].DaytimeEnemies = marDaytime.GetEnemyPool();
         Instance.patchedMoons[5].DaytimeEnemies = adaDaytime.GetEnemyPool();
@@ -240,10 +241,10 @@ public class HQRebalance : BaseUnityPlugin
         Instance.patchedMoons[10].DaytimeEnemies = artDaytime.GetEnemyPool();
 
         //Enemy indoor changes
-        Utility.EnemyPool renIndoor = new(5, 20, 0, 15, 5, 0, 15, 40, 0, 30, 20, 100, 0, 30, 50);
-        Utility.EnemyPool dinIndoor = new(8, 30, 8, 4, 20, 3, 3, 5, 7, 10, 0, 8, 0, 4, 5);
-        Utility.EnemyPool titIndoor = new(0, 0, 0, 60, 0, 60, 20, 60, 80, 60, 30, 60, 0, 60, 60);
-        Utility.EnemyPool artIndoor = new(35, 91, 42, 77, 45, 92, 35, 100, 95, 92, 89, 100, 0, 100, 86);
+        EnemyPool renIndoor = new(5, 20, 0, 15, 5, 0, 15, 40, 0, 30, 20, 100, 0, 30, 50);
+        EnemyPool dinIndoor = new(8, 30, 8, 4, 20, 3, 3, 5, 7, 10, 0, 8, 0, 4, 5);
+        EnemyPool titIndoor = new(0, 0, 0, 60, 0, 60, 20, 60, 80, 60, 30, 60, 0, 60, 60);
+        EnemyPool artIndoor = new(35, 91, 42, 77, 45, 92, 35, 100, 95, 92, 89, 100, 0, 100, 86);
 
         Instance.patchedMoons[6].Enemies = renIndoor.GetEnemyPool();
         Instance.patchedMoons[7].Enemies = dinIndoor.GetEnemyPool();
@@ -251,8 +252,8 @@ public class HQRebalance : BaseUnityPlugin
         Instance.patchedMoons[10].Enemies = artIndoor.GetEnemyPool();
 
         //Enemy outdoor changes
-        Utility.EnemyPool dinOutdoor = new(0, 0, 0, 50, 35, 35);
-        Utility.EnemyPool titOutdoor = new(0, 0, 32, 80, 25, 0);
+        EnemyPool dinOutdoor = new(0, 0, 0, 50, 35, 35);
+        EnemyPool titOutdoor = new(0, 0, 32, 80, 25, 0);
 
         Instance.patchedMoons[7].OutsideEnemies = dinOutdoor.GetEnemyPool();
         Instance.patchedMoons[9].OutsideEnemies = titOutdoor.GetEnemyPool();

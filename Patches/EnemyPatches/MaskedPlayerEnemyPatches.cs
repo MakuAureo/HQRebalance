@@ -94,19 +94,11 @@ internal class MaskedPlayerEnemyPatches
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> TranspilekillAnimation(IEnumerable<CodeInstruction> codes)
     {
-        CodeMatcher matcher = new(codes);
-
-        matcher.MatchForward(false, new CodeMatch(OpCodes.Call, AccessTools.PropertyGetter(typeof(Vector3), nameof(Vector3.zero))));
-        if (matcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find pattern. Aborting {nameof(MaskedPlayerEnemyPatches.TranspilekillAnimation)} transpiler.");
-            return codes;
-        }
-        matcher.Advance(1);
-    
-        matcher.SetOpcodeAndAdvance(OpCodes.Ldc_I4_1);
-
-        return matcher.InstructionEnumeration();
+        return new CodeMatcher(codes)
+            .MatchForward(false, new CodeMatch(OpCodes.Call, AccessTools.PropertyGetter(typeof(Vector3), nameof(Vector3.zero))))
+            .Advance(1)
+            .SetOpcodeAndAdvance(OpCodes.Ldc_I4_1)
+            .InstructionEnumeration();
     }
 }
 

@@ -72,32 +72,18 @@ internal class DungeonGeneratorPatches
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> TranspileProcessGlobalProps(IEnumerable<CodeInstruction> codes)
     {
-        CodeMatcher matcher = new(codes);
-
-        matcher.MatchForward(true, new CodeMatch(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(TilePlacementData), nameof(TilePlacementData.NormalizedDepth))));
-        if (matcher.IsInvalid)
+        CodeInstruction[] callGetNormalizedPathDepthForFireExit =
         {
-            HQRebalance.Logger.LogError($"Could not the ending pattern. Aborting {nameof(DungeonGeneratorPatches.TranspileProcessGlobalProps)} transpiler.");
-            return codes;
-        }
-        int endIndex = matcher.Pos;
+            new CodeInstruction(OpCodes.Ldloc_S, 6),
+            new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DungeonGeneratorHelper), nameof(DungeonGeneratorHelper.GetNormalizedPathDepthForFireExit)))
+        };
 
-        matcher.MatchBack(false, new CodeMatch(OpCodes.Ldloc_3));
-        if (matcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not the starting pattern. Aborting {nameof(DungeonGeneratorPatches.TranspileProcessGlobalProps)} transpiler.");
-            return codes;
-        }
-        matcher.Advance(1);
-        int startIndex = matcher.Pos;
-
-        matcher.RemoveInstructionsInRange(startIndex, endIndex);
-        matcher.InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldloc_S, 6),
-                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(DungeonGeneratorHelper), nameof(DungeonGeneratorHelper.GetNormalizedPathDepthForFireExit)))
-        );
-
-        return matcher.InstructionEnumeration();
+        return new CodeMatcher(codes)
+            .MatchForward(false, new CodeMatch(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(TilePlacementData), nameof(TilePlacementData.NormalizedDepth))))
+            .Advance(-1)
+            .RemoveInstructions(2)
+            .Insert(callGetNormalizedPathDepthForFireExit)
+            .InstructionEnumeration();
     }
 }
 

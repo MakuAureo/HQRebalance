@@ -30,39 +30,18 @@ internal class TimeOfDayPatches
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> TranspileSetNewProfitQuota(IEnumerable<CodeInstruction> codes)
     {
-        CodeMatcher matcher = new(codes);
-
-        matcher.MatchForward(false, new CodeMatch(OpCodes.Stloc_1));
-        if (matcher.IsInvalid)
+        CodeInstruction[] callCalculateQuotaIncrease =
         {
-            HQRebalance.Logger.LogError($"Could not find the starting pattern. Aborting {nameof(TimeOfDayPatches.TranspileSetNewProfitQuota)} transpiler.");
-            return codes;
-        }
-        int startIndex = matcher.Pos;
+            new CodeInstruction(OpCodes.Ldloc_0),
+            new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(TimeOfDayHelper), nameof(TimeOfDayHelper.CalculateQuotaIncrease))),
+            new CodeInstruction(OpCodes.Stloc_0)
+        };
 
-        CodeMatcher endMatcher = matcher.Clone();
-        endMatcher.MatchForward(true, new CodeMatch(OpCodes.Stloc_0));
-        endMatcher.MatchForward(true, new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(Debug), nameof(Debug.Log), new System.Type[] { typeof(void) })));
-        if (endMatcher.IsInvalid)
-        {
-            HQRebalance.Logger.LogError($"Could not find the ending pattern. Aborting {nameof(TimeOfDayPatches.TranspileSetNewProfitQuota)} transpiler.");
-            return codes;
-        }
-        int endIndex = endMatcher.Pos;
-
-        if (startIndex >= endIndex)
-        {
-            HQRebalance.Logger.LogWarning("Start and end patterns are the same or in the wrong order. Nothing to remove.");
-            return codes;
-        }
-        matcher.RemoveInstructionsInRange(startIndex, endIndex);
-        matcher.InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldloc_0),
-                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(TimeOfDayHelper), nameof(TimeOfDayHelper.CalculateQuotaIncrease))),
-                new CodeInstruction(OpCodes.Stloc_0)
-            );
-
-        return matcher.InstructionEnumeration();
+        return new CodeMatcher(codes)
+            .MatchForward(false, new CodeMatch(OpCodes.Stloc_1))
+            .RemoveInstructions(42)
+            .Insert(callCalculateQuotaIncrease)
+            .InstructionEnumeration();
     }
 
 }
