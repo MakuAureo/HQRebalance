@@ -399,14 +399,7 @@ internal class HQRConfig
         EnumDropDownConfigItem<Presets> presetConfig = new(preset, new EnumDropDownOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
         LethalConfig.LethalConfigManager.AddConfigItem(presetConfig);
 
-        BoolCheckBoxConfigItem fireExitPatchConfig = new(fireExitPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        fireExitPatch.SettingChanged += (obj, arg) =>
-        {
-            if (fireExitPatch.Value)
-                HQRebalance.Harmony?.Patch(AccessTools.Method(typeof(DunGen.DungeonGenerator), nameof(DunGen.DungeonGenerator.ProcessGlobalProps)));
-            else
-                HQRebalance.Harmony?.Unpatch(AccessTools.Method(typeof(DunGen.DungeonGenerator), nameof(DunGen.DungeonGenerator.ProcessGlobalProps)), HarmonyPatchType.Transpiler);
-        };
+        BoolCheckBoxConfigItem fireExitPatchConfig = new(fireExitPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
 		LethalConfig.LethalConfigManager.AddConfigItem(fireExitPatchConfig);
 
         BoolCheckBoxConfigItem butlerPatchesConfig = new(butlerPatches, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
@@ -452,42 +445,15 @@ internal class HQRConfig
 		LethalConfig.LethalConfigManager.AddConfigItem(facilityDeltaConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(mapTileSizeConfig);
 
-        BoolCheckBoxConfigItem disableSingleItemDayConfig = new(disableSingleItemDay, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        disableSingleItemDay.SettingChanged += (obj, arg) =>
-        {
-            if (disableSingleItemDay.Value)
-                HQRebalance.Harmony?.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.SpawnScrapInLevel)), transpiler: new HarmonyMethod(typeof(Patches.RoundManagerPatches).GetMethod(nameof(Patches.RoundManagerPatches.TranspileSpawnScrapInLevel))));
-            else
-                HQRebalance.Harmony?.Unpatch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.SpawnScrapInLevel)), HarmonyPatchType.Transpiler);
-        };
+        BoolCheckBoxConfigItem disableSingleItemDayConfig = new(disableSingleItemDay, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
 		LethalConfig.LethalConfigManager.AddConfigItem(disableSingleItemDayConfig);
 
-        BoolCheckBoxConfigItem difficultyScalingPatchConfig = new(difficultyScalingPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        difficultyScalingPatch.SettingChanged += (obj, arg) =>
-        {
-            if (difficultyScalingPatch.Value)
-                HQRebalance.Harmony?.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.PlotOutEnemiesForNextHour)), transpiler: new HarmonyMethod(typeof(Patches.RoundManagerPatches).GetMethod(nameof(Patches.RoundManagerPatches.TranspilePlotOutEnemiesForNextHour))));
-            else
-                HQRebalance.Harmony?.Unpatch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.PlotOutEnemiesForNextHour)), HarmonyPatchType.Transpiler);
-        };
+        BoolCheckBoxConfigItem difficultyScalingPatchConfig = new(difficultyScalingPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
         FloatSliderConfigItem quotaScalingFactorConfig = new(quotaScalingFactor, new FloatSliderOptions { Min = 0f, Max = 1f, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
 		LethalConfig.LethalConfigManager.AddConfigItem(difficultyScalingPatchConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(quotaScalingFactorConfig);
 
-        BoolCheckBoxConfigItem infestationPatchConfig = new(infestationPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        infestationPatch.SettingChanged += (obj, arg) =>
-        {
-            if (infestationPatch.Value)
-            {
-                HQRebalance.Harmony?.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.RefreshEnemiesList)), transpiler: new HarmonyMethod(typeof(Patches.RoundManagerPatches).GetMethod(nameof(Patches.RoundManagerPatches.TranspileRefreshEnemyList))));
-                HQRebalance.Harmony?.Patch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.AssignRandomEnemyToVent)), transpiler: new HarmonyMethod(typeof(Patches.RoundManagerPatches).GetMethod(nameof(Patches.RoundManagerPatches.TranspileAssignRandomEnemyToVent))));
-            }
-            else
-            {
-                HQRebalance.Harmony?.Unpatch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.RefreshEnemiesList)), HarmonyPatchType.Transpiler);
-                HQRebalance.Harmony?.Unpatch(AccessTools.Method(typeof(RoundManager), nameof(RoundManager.AssignRandomEnemyToVent)), HarmonyPatchType.Transpiler);
-            }
-        };
+        BoolCheckBoxConfigItem infestationPatchConfig = new(infestationPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
 		LethalConfig.LethalConfigManager.AddConfigItem(infestationPatchConfig);
         foreach (KeyValuePair<EnemyType, ConfigEntry<bool>> enemyEntryPair in selectableEnemies)
         {
@@ -513,14 +479,7 @@ internal class HQRConfig
 		LethalConfig.LethalConfigManager.AddConfigItem(tier3passPriceConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(artPriceConfig);
 
-        BoolCheckBoxConfigItem luckPatchConfig = new(luckPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        luckPatch.SettingChanged += (obj, arg) =>
-        {
-            if (luckPatch.Value)
-                HQRebalance.Harmony?.Patch(AccessTools.Method(typeof(TimeOfDay), nameof(TimeOfDay.SetNewProfitQuota)), transpiler: new HarmonyMethod(typeof(Patches.TimeOfDayPatches).GetMethod(nameof(Patches.TimeOfDayPatches.TranspileSetNewProfitQuota))));
-            else
-                HQRebalance.Harmony?.Unpatch(AccessTools.Method(typeof(TimeOfDay), nameof(TimeOfDay.SetNewProfitQuota)), HarmonyPatchType.Transpiler);
-        };
+        BoolCheckBoxConfigItem luckPatchConfig = new(luckPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
         EnumDropDownConfigItem<LuckType> luckSystemConfig = new(luckSystem, false);
 		LethalConfig.LethalConfigManager.AddConfigItem(luckPatchConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(luckSystemConfig);
