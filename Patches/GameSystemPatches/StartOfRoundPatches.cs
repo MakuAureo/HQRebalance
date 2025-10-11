@@ -19,8 +19,13 @@ internal class StartOfRoundPatches
     private static void PostStart(StartOfRound __instance)
     {
         daysClearedInARow = 0;
-        HQRebalance.Instance.SetupMoons(__instance);
-        UnityEngine.Resources.FindObjectsOfTypeAll<CaveDwellerAI>()[0].enemyType.increasedChanceInterior = -1;
+
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Default || HQRebalance.ConfigOptions.moonPatches.Value)
+            HQRebalance.Instance.SetupMoons(__instance);
+
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Default || HQRebalance.ConfigOptions.maneaterPatches.Value || HQRebalance.ConfigOptions.disableIncreasedSpawnChance.Value)
+            UnityEngine.Resources.FindObjectsOfTypeAll<CaveDwellerAI>()[0].enemyType.increasedChanceInterior = -1;
+
         MaskedPlayerEnemyHelper.PopulateMaskedPlayerEnemyHelperInfo();
     }
 
@@ -44,7 +49,9 @@ internal class StartOfRoundPatches
 
         if (__instance.currentLevel.spawnEnemiesAndScrap)
         {
-            if ((double)(scrapCollectedOnServer - 5 * __instance.GetBodiesInShip()) / (double)Network.HQRNetworkManager.Instance.bottomLine.Value > 0.85f)
+            double clearThreshold = HQRebalance.ConfigOptions.preset.Value == Presets.Default ? 0.85f : (double)HQRebalance.ConfigOptions.lootThreshold.Value/100f;
+
+            if ((double)(scrapCollectedOnServer - 5 * __instance.GetBodiesInShip()) / (double)Network.HQRNetworkManager.Instance.bottomLine.Value >= 0.85f)
                 daysClearedInARow++;
             else
                 daysClearedInARow = 0;

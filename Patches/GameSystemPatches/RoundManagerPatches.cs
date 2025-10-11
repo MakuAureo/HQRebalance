@@ -13,28 +13,34 @@ internal class RoundManagerPatches
     {
         __instance.enemyRushIndex = -1;
 
-        const double minesSize = 0.65f; //65% is mines
-        const double facilityDelta = 0.05f; //How much bigger 2nd facility is than the 1st
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.mineshaftPatch.Value)
+            return;
 
-        const double facilitySize = 1 - minesSize;
-        const double facility1Size = (facilitySize - facilityDelta) * 0.5f;
-        const double facility2Size = (facilitySize + facilityDelta) * 0.5f;
+        double cavesSize = HQRebalance.ConfigOptions.preset.Value == Presets.Default ? 0.65f : HQRebalance.ConfigOptions.caveSize.Value;
+        double facilityDelta = HQRebalance.ConfigOptions.preset.Value == Presets.Default ? 0.05f : HQRebalance.ConfigOptions.facilityDelta.Value;
 
-        __instance.dungeonFlowTypes[4].MapTileSize = 1.1f;
+        double facilitySize = 1 - cavesSize;
+        double facility1Size = (facilitySize - facilityDelta) * 0.5f;
+        double facility2Size = (facilitySize + facilityDelta) * 0.5f;
+
+        __instance.dungeonFlowTypes[4].MapTileSize = HQRebalance.ConfigOptions.preset.Value == Presets.Default ? 1.1f : HQRebalance.ConfigOptions.mapTileSize.Value;
 
         __instance.dungeonFlowTypes[4].dungeonFlow.Lines[0].Length = (float)facility1Size;
 
-        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[1].Length = (float)minesSize;
+        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[1].Length = (float)cavesSize;
         __instance.dungeonFlowTypes[4].dungeonFlow.Lines[1].Position = (float)facility1Size;
 
         __instance.dungeonFlowTypes[4].dungeonFlow.Lines[2].Length = (float)facility2Size;
-        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[2].Position = (float)(facility1Size + minesSize);
+        __instance.dungeonFlowTypes[4].dungeonFlow.Lines[2].Position = (float)(facility1Size + cavesSize);
     }
 
     [HarmonyPatch(nameof(RoundManager.OnDestroy))]
     [HarmonyPrefix]
     private static void PreOnDestroy(RoundManager __instance)
     {
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.infestationPatch.Value)
+            return;
+
         if (__instance.enemyRushIndex > -1)
         {
             StartOfRound.Instance.currentLevel.Enemies[__instance.enemyRushIndex].enemyType.MaxCount = RoundManagerHelper.saveMaxEnemyCount;
@@ -51,8 +57,11 @@ internal class RoundManagerPatches
 
     [HarmonyPatch(nameof(RoundManager.SpawnScrapInLevel))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> TranspileSpawnScrapInLevel(IEnumerable<CodeInstruction> codes)
+    public static IEnumerable<CodeInstruction> TranspileSpawnScrapInLevel(IEnumerable<CodeInstruction> codes)
     {
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.disableSingleItemDay.Value)
+            return codes;
+
         return new CodeMatcher(codes)
             .MatchForward(false, new CodeMatch(OpCodes.Ldc_I4_6))
             .SetOpcodeAndAdvance(OpCodes.Ldc_I4_0)
@@ -63,8 +72,11 @@ internal class RoundManagerPatches
 
     [HarmonyPatch(nameof(RoundManager.PlotOutEnemiesForNextHour))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> TranspilePlotOutEnemiesForNextHour(IEnumerable<CodeInstruction> codes)
+    public static IEnumerable<CodeInstruction> TranspilePlotOutEnemiesForNextHour(IEnumerable<CodeInstruction> codes)
     {
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.infestationPatch.Value)
+            return codes;
+
         CodeInstruction[] callSteadSpawnIncrease =
         {
             new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(RoundManagerHelper), nameof(RoundManagerHelper.SteadSpawnIncrease))),
@@ -86,8 +98,11 @@ internal class RoundManagerPatches
 
     [HarmonyPatch(nameof(RoundManager.RefreshEnemiesList))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> TranspileRefreshEnemyList(IEnumerable<CodeInstruction> codes)
+    public static IEnumerable<CodeInstruction> TranspileRefreshEnemyList(IEnumerable<CodeInstruction> codes)
     {
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.infestationPatch.Value)
+            return codes;
+
         CodeInstruction[] callOverwriteRushCode =
         {
             new CodeInstruction(OpCodes.Ldarg_0),
@@ -103,8 +118,11 @@ internal class RoundManagerPatches
 
     [HarmonyPatch(nameof(RoundManager.AssignRandomEnemyToVent))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> TranspileAssignRandomEnemyToVent(IEnumerable<CodeInstruction> codes)
+    public static IEnumerable<CodeInstruction> TranspileAssignRandomEnemyToVent(IEnumerable<CodeInstruction> codes)
     {
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.infestationPatch.Value)
+            return codes;
+
         CodeInstruction[] callSpawnProbabilityCodeAndStore =
         {
             new CodeInstruction(OpCodes.Ldarg_0),
@@ -147,13 +165,17 @@ internal static class RoundManagerHelper
 
     public static float SteadSpawnIncrease()
     {
-        return (float)TimeOfDay.Instance.timesFulfilledQuota / 5f;
+        float multiplier = HQRebalance.ConfigOptions.preset.Value == Presets.Default ? 0.2f : HQRebalance.ConfigOptions.quotaScalingFactor.Value;
+        return (float)TimeOfDay.Instance.timesFulfilledQuota * multiplier;
     }
 
     public static void OverwriteRushCode(RoundManager instance)
     {
         System.Random rng = new(StartOfRound.Instance.randomMapSeed + 2145);
-        int chance = (StartOfRoundPatches.daysClearedInARow >= 3) ? 20 : 4;
+        int baseChance = HQRebalance.ConfigOptions.preset.Value == Presets.Default ? 4 : HQRebalance.ConfigOptions.baseChance.Value;
+        int boostedChance = HQRebalance.ConfigOptions.preset.Value == Presets.Default ? 20 : HQRebalance.ConfigOptions.boostedChance.Value;
+        int daysNecessary = HQRebalance.ConfigOptions.preset.Value == Presets.Default ? 3 : HQRebalance.ConfigOptions.daysLootedInARow.Value;
+        int chance = (StartOfRoundPatches.daysClearedInARow >= daysNecessary) ? boostedChance : baseChance;
 
         if (rng.Next(0, 100) < chance)
         {
@@ -163,12 +185,13 @@ internal static class RoundManagerHelper
 
             for (int i = 0; i < instance.currentLevel.Enemies.Count; i++)
             {
-                if (instance.currentLevel.Enemies[i].enemyType.enemyName == "Nutcracker" ||
-                    instance.currentLevel.Enemies[i].enemyType.enemyName == "Butler" ||
-                    instance.currentLevel.Enemies[i].enemyType.enemyName == "Masked")
+                foreach (KeyValuePair<EnemyType, BepInEx.Configuration.ConfigEntry<bool>> targetableEnemy in HQRebalance.ConfigOptions.selectableEnemies)
                 {
-                    enem.Add(i);
-                    found = true; ;
+                    if (instance.currentLevel.Enemies[i].enemyType.enemyName == targetableEnemy.Key.enemyName && targetableEnemy.Value.Value)
+                    {
+                        enem.Add(i);
+                        found = true; ;
+                    }
                 }
             }
 

@@ -1,5 +1,6 @@
 using System;
 using HarmonyLib;
+using UnityEngine;
 
 namespace HQRebalance.Patches;
 
@@ -8,9 +9,13 @@ internal class GameNetworkManagerPatches
 {
     [HarmonyPatch(nameof(GameNetworkManager.Start))]
     [HarmonyPostfix]
-    private static void PostStart(GameNetworkManager __instance)
+    public static void PostStart(GameNetworkManager __instance)
     {
         Network.HQRNetworkManager.CreateAndRegisterPrefab();
+
+        EnemyType[] allEnemies = Resources.FindObjectsOfTypeAll<EnemyType>();
+        HQRebalance.ConfigOptions = new(HQRebalance.Instance.Config, allEnemies);
+        HQRebalance.Patch();
     }
 
     [HarmonyPatch(nameof(GameNetworkManager.SaveGameValues))]

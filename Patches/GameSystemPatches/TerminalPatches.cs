@@ -34,8 +34,15 @@ internal class TerminalPatches
         TerminalNode dineNode = __instance.terminalNodes.allKeywords[27].compatibleNouns[6].result;
         TerminalNode titanNode = __instance.terminalNodes.allKeywords[27].compatibleNouns[9].result;
 
-        artificeNode.itemCost = 3000;
-        artificeNode.terminalOptions[1].result.itemCost = 3000;
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Default || HQRebalance.ConfigOptions.moonPatches.Value)
+        {
+            int artPrice = HQRebalance.ConfigOptions.preset.Value == Presets.Default ? 3000 : HQRebalance.ConfigOptions.artPrice.Value;
+            artificeNode.itemCost = artPrice;
+            artificeNode.terminalOptions[1].result.itemCost = artPrice;
+        }
+
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.tier3passPatch.Value)
+            return;
 
         rendNode.itemCost = 0;
         rendNode.terminalOptions[1].result.itemCost = 0;
@@ -54,6 +61,9 @@ internal class TerminalPatches
     [HarmonyPrefix]
     private static void PreLoadNewNode(Terminal __instance, ref TerminalNode node)
     {
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.tier3passPatch.Value)
+            return;
+
         if ((node.name == "85route" || node.name == "7route" || node.name == "8route") && !Network.HQRNetworkManager.Instance.tier3pass.Value)
         {
             if (node.name == "85route")
@@ -65,7 +75,6 @@ internal class TerminalPatches
 
             __instance.totalCostOfItems = TerminalHelper.TerminalNodes.buyPass.itemCost;
             node = TerminalHelper.TerminalNodes.buyPass;
-
         }
     }
 
@@ -109,10 +118,10 @@ internal class TerminalPatches
 
 internal static class TerminalHelper
 {
-    private const int passCost = 610;
     public const string passConfirmString = "[passConfirm]";
     public const string coldMoonString = "[coldMoon]";
 
+    private static int passCost = HQRebalance.ConfigOptions.preset.Value == Presets.Default ? 610 : HQRebalance.ConfigOptions.tier3passPrice.Value;
     public static Terminal terminal = null!;
     public static string terminalInput = null!;
     public static string moon = null!;

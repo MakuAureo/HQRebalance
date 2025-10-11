@@ -1,6 +1,5 @@
 # HighQuotaRebalanced Beta
-Due to how changes are implemented, this mod is not compatible with mods that add new items, new enemies or change the vanilla moons in some way.
-There will be a config for full release allowing you toggle different patches.
+Due to how changes are implemented, moon changes are not compatible with mods that add new items, new enemies or change the vanilla moons in some way, but they can be disabled in the mod's configs.
 
 ## Description
 HQR is meant to keep the vanilla feeling of the game with changes that make high quota more varied and more enjoyable to play by adding more emphasis

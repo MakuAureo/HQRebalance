@@ -13,6 +13,9 @@ internal class ButlerEnemyAIPatches
     [HarmonyPostfix]
     private static void PostStart(ButlerEnemyAI __instance)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.butlerPatches.Value && !HQRebalance.ConfigOptions.addKnifeIcon.Value)
+            return;
+
         knifeIcons.Add(__instance, new()
         {
             radarIcon = UnityEngine.Object.Instantiate(StartOfRound.Instance.itemRadarIconPrefab, RoundManager.Instance.mapPropsContainer.transform).transform,
@@ -24,7 +27,7 @@ internal class ButlerEnemyAIPatches
     [HarmonyPostfix]
     private static void PostLateUpdate(ButlerEnemyAI __instance)
     {
-        if (__instance.isEnemyDead)
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && __instance.isEnemyDead || (!HQRebalance.ConfigOptions.butlerPatches.Value && !HQRebalance.ConfigOptions.addKnifeIcon.Value))
             return;
 
         if (knifeIcons.TryGetValue(__instance, out KnifeIconInfo knifeIcon))
@@ -37,6 +40,9 @@ internal class ButlerEnemyAIPatches
     [HarmonyPostfix]
     private static void PostKillEnemy(ButlerEnemyAI __instance)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.butlerPatches.Value && !HQRebalance.ConfigOptions.addKnifeIcon.Value)
+            return;
+
         if (knifeIcons.TryGetValue(__instance, out KnifeIconInfo knifeIcon)) {
             Object.Destroy(knifeIcon.radarIcon.gameObject);
         }
@@ -48,6 +54,9 @@ internal class ButlerEnemyAIPatches
     [HarmonyPrefix]
     private static void PreOnCollideWithPlayer(ButlerEnemyAI __instance)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.butlerPatches.Value && !HQRebalance.ConfigOptions.disableStealthStab.Value)
+            return;
+
         __instance.timeSinceStealthStab = Time.realtimeSinceStartup;
     }
 }

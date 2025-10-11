@@ -10,6 +10,9 @@ internal class CaveDwellerAIPatches
     [HarmonyPrefix]
     private static void PreHitEnemy(CaveDwellerAI __instance, int force)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.maneaterPatches.Value && !HQRebalance.ConfigOptions.applyNomalDamage.Value)
+            return;
+
         if (!__instance.inSpecialAnimation && __instance.currentBehaviourStateIndex != 0)
             __instance.enemyHP -= force - 1;
     }
@@ -18,6 +21,9 @@ internal class CaveDwellerAIPatches
     [HarmonyPrefix]
     private static void PreBabyUpdate(CaveDwellerAI __instance)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.maneaterPatches.Value && !HQRebalance.ConfigOptions.cannotCryOrEatBeforeSeeingPlayer.Value)
+            return;
+
         if (!(NetworkManager.Singleton.IsServer || NetworkManager.Singleton.IsHost))
             return;
 
@@ -35,6 +41,9 @@ internal class CaveDwellerAIPatches
     [HarmonyPrefix]
     private static bool PreScareBaby(CaveDwellerAI __instance)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.maneaterPatches.Value && !HQRebalance.ConfigOptions.cannotCryOrEatBeforeSeeingPlayer.Value)
+            return true;
+
         if (!__instance.hasPlayerFoundBaby)
             return false;
 

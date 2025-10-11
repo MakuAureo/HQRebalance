@@ -8,12 +8,18 @@ using HQRebalance.Utility;
 namespace HQRebalance;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInDependency(LethalConfigGUID, BepInDependency.DependencyFlags.SoftDependency)]
+[BepInDependency(FairerFireExitsGUID, BepInDependency.DependencyFlags.SoftDependency)]
 public class HQRebalance : BaseUnityPlugin
 {
+    public const string LethalConfigGUID = "ainavt.lc.lethalconfig";
+    public const string FairerFireExitsGUID = "OreoM.FairerFireExits";
+
     public static HQRebalance Instance { get; private set; } = null!;
     internal new static ManualLogSource Logger { get; private set; } = null!;
     internal static Harmony? Harmony { get; set; }
 
+    internal static HQRConfig ConfigOptions { get; set; } = null!;
     private SelectableLevel[] patchedMoons = null!;
 
     private void Awake()
@@ -21,7 +27,16 @@ public class HQRebalance : BaseUnityPlugin
         Logger = base.Logger;
         Instance = this;
 
-        Patch();
+        //Delay patch until all assemblies are loaded and the Postfix to Start of GameNetworkManager has loaded the config file
+        Harmony ??= new Harmony(MyPluginInfo.PLUGIN_GUID);
+        MethodInfo gnmStart = AccessTools.Method(typeof(GameNetworkManager), nameof(GameNetworkManager.Start));
+        MethodInfo gnmStartPost = typeof(Patches.GameNetworkManagerPatches).GetMethod(nameof(Patches.GameNetworkManagerPatches.PostStart));
+        if (gnmStart == null)
+        {
+            Logger.LogError("MethodInfo not found");
+            return;
+        }
+        Harmony.Patch(gnmStart, postfix: new HarmonyMethod(gnmStartPost));
         NetcodePatch();
 
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} has loaded!");
@@ -229,7 +244,7 @@ public class HQRebalance : BaseUnityPlugin
         Instance.patchedMoons[10].spawnableScrap = artLoot.GetLootpool();
         Instance.patchedMoons[12].spawnableScrap = embLoot.GetLootpool();
 
-        //Daytime changes
+        //Enemy daytime changes
         EnemyPool marDaytime = new(39, 20, 4, 100, 0);
         EnemyPool adaDaytime = new(30, 40, 6, 35, 5);
         EnemyPool offDaytime = new(0, 100, 0, 0, 100);
@@ -257,8 +272,6 @@ public class HQRebalance : BaseUnityPlugin
 
         Instance.patchedMoons[7].OutsideEnemies = dinOutdoor.GetEnemyPool();
         Instance.patchedMoons[9].OutsideEnemies = titOutdoor.GetEnemyPool();
-
-        //Enemy daytime changes
 
         //Swap the levels for the actual patched moons
         instance.levels = Instance.patchedMoons;

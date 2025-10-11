@@ -43,6 +43,12 @@ internal class DungeonGeneratorPatches
     [HarmonyPrefix]
     private static void PreProcessGlobalProps(DungeonGenerator __instance)
     {
+        if (HQRebalance.ConfigOptions.fairerFireExitsLoaded != null && HQRebalance.ConfigOptions.fairerFireExitsLoaded.Value)
+            return;
+
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.fireExitPatch.Value)
+            return;
+
         Keyframe[]? currDungeonKeyframes = null;
 
         if (__instance.DungeonFlow.name == "Level1Flow")
@@ -70,8 +76,14 @@ internal class DungeonGeneratorPatches
 
     [HarmonyPatch(nameof(DungeonGenerator.ProcessGlobalProps))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> TranspileProcessGlobalProps(IEnumerable<CodeInstruction> codes)
+    public static IEnumerable<CodeInstruction> TranspileProcessGlobalProps(IEnumerable<CodeInstruction> codes)
     {
+        if (HQRebalance.ConfigOptions.fairerFireExitsLoaded != null && HQRebalance.ConfigOptions.fairerFireExitsLoaded.Value)
+            return codes;
+
+        if (HQRebalance.ConfigOptions.preset.Value != Presets.Default && !HQRebalance.ConfigOptions.fireExitPatch.Value)
+            return codes;
+
         CodeInstruction[] callGetNormalizedPathDepthForFireExit =
         {
             new CodeInstruction(OpCodes.Ldloc_S, 6),

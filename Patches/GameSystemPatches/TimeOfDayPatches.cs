@@ -12,6 +12,9 @@ internal class TimeOfDayPatches
     [HarmonyPostfix]
     private static void PostCalculateLuckValue(TimeOfDay __instance)
     {
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.luckPatch.Value)
+            return;
+
         TimeOfDayHelper.luckPoints = 0;
         AutoParentToShip[] furniture = Object.FindObjectsByType<AutoParentToShip>(FindObjectsSortMode.None);
         foreach (AutoParentToShip f in furniture)
@@ -28,8 +31,11 @@ internal class TimeOfDayPatches
 
     [HarmonyPatch(nameof(TimeOfDay.SetNewProfitQuota))]
     [HarmonyTranspiler]
-    private static IEnumerable<CodeInstruction> TranspileSetNewProfitQuota(IEnumerable<CodeInstruction> codes)
+    public static IEnumerable<CodeInstruction> TranspileSetNewProfitQuota(IEnumerable<CodeInstruction> codes)
     {
+        if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.luckPatch.Value)
+            return codes;
+
         CodeInstruction[] callCalculateQuotaIncrease =
         {
             new CodeInstruction(OpCodes.Ldloc_0),
@@ -58,6 +64,9 @@ internal static class TimeOfDayHelper
         TimeOfDay tod = TimeOfDay.Instance;
 
         double luckFactor = (luckPoints < 0) ? -0.1f : a * luckPoints * luckPoints + b * luckPoints;
+        if (HQRebalance.ConfigOptions.luckSystem.Value == LuckType.High)
+            luckFactor *= -1;
+
         float inc = tod.quotaVariables.baseIncrease * startIncrease;
         float random = 1f + tod.quotaVariables.randomizerCurve.Evaluate(unitaryRandom) * tod.quotaVariables.randomizerMultiplier + (float)luckFactor;
 

@@ -13,6 +13,9 @@ internal class MaskedPlayerEnemyPatches
     [HarmonyPostfix]
     private static void PostStart(MaskedPlayerEnemy __instance)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.maskedPatches.Value && !HQRebalance.ConfigOptions.useMaskItem.Value)
+            return;
+
         if (NetworkManager.Singleton.IsServer)
         {
             GameObject maskPrefab = (__instance.maskTypeIndex == MaskedPlayerEnemyHelper.comedyMaskIndex) ? (MaskedPlayerEnemyHelper.comedyPrefab) : (MaskedPlayerEnemyHelper.tragedyPrefab);
@@ -29,6 +32,9 @@ internal class MaskedPlayerEnemyPatches
     [HarmonyPostfix]
     private static void PostSetMaskGlow(MaskedPlayerEnemy __instance, bool enable)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.maskedPatches.Value && !HQRebalance.ConfigOptions.useMaskItem.Value)
+            return;
+
         if (!MaskedPlayerEnemyHelper.masks.TryGetValue(__instance, out HauntedMaskItemInfo maskItemInfo))
         {
             HQRebalance.Logger.LogError("Could not find mask to glow");
@@ -52,6 +58,9 @@ internal class MaskedPlayerEnemyPatches
     [HarmonyPostfix]
     private static void PostLateUpdate(MaskedPlayerEnemy __instance)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.maskedPatches.Value && !HQRebalance.ConfigOptions.useMaskItem.Value)
+            return;
+
         if (MaskedPlayerEnemyHelper.masks.TryGetValue(__instance, out HauntedMaskItemInfo maskItemInfo))
         {
             HauntedMaskItem maskItem = maskItemInfo.mask;
@@ -79,6 +88,9 @@ internal class MaskedPlayerEnemyPatches
     [HarmonyPostfix]
     private static void PostKillEnemy(MaskedPlayerEnemy __instance)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.maskedPatches.Value && !HQRebalance.ConfigOptions.useMaskItem.Value)
+            return;
+
         if (MaskedPlayerEnemyHelper.masks.TryGetValue(__instance, out HauntedMaskItemInfo maskItemInfo))
         {
             HauntedMaskItem maskItem = maskItemInfo.mask;
@@ -94,6 +106,9 @@ internal class MaskedPlayerEnemyPatches
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> TranspilekillAnimation(IEnumerable<CodeInstruction> codes)
     {
+        if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.maskedPatches.Value && !HQRebalance.ConfigOptions.useMaskItem.Value)
+            return codes;
+
         return new CodeMatcher(codes)
             .MatchForward(false, new CodeMatch(OpCodes.Call, AccessTools.PropertyGetter(typeof(Vector3), nameof(Vector3.zero))))
             .Advance(1)
