@@ -43,7 +43,7 @@ internal class DungeonGeneratorPatches
     [HarmonyPrefix]
     private static void PreProcessGlobalProps(DungeonGenerator __instance)
     {
-        if (HQRebalance.ConfigOptions.fairerFireExitsLoaded != null && HQRebalance.ConfigOptions.fairerFireExitsLoaded.Value)
+        if (HQRebalance.ConfigOptions.fairerFireExitsLoaded)
             return;
 
         if (HQRebalance.ConfigOptions.presetToUse == Presets.Custom && !HQRebalance.ConfigOptions.fireExitPatch.Value)
@@ -78,7 +78,7 @@ internal class DungeonGeneratorPatches
     [HarmonyTranspiler]
     private static IEnumerable<CodeInstruction> TranspileProcessGlobalProps(IEnumerable<CodeInstruction> codes)
     {
-        if (HQRebalance.ConfigOptions.fairerFireExitsLoaded != null && HQRebalance.ConfigOptions.fairerFireExitsLoaded.Value)
+        if (HQRebalance.ConfigOptions.fairerFireExitsLoaded)
             return codes;
 
         if (HQRebalance.ConfigOptions.preset.Value != Presets.Default && !HQRebalance.ConfigOptions.fireExitPatch.Value)

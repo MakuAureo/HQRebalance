@@ -64,16 +64,13 @@ internal class HQRConfig
     public readonly ConfigEntry<bool> usePreV64GroundColision;
     public readonly ConfigEntry<float> speedLostToWaterCaves;
 
-    public bool? lethalConfigLoaded;
-    public bool? fairerFireExitsLoaded;
+    public bool lethalConfigLoaded;
+    public bool fairerFireExitsLoaded;
 
     public HQRConfig(ConfigFile cfg)
     {
-        if (lethalConfigLoaded == null)
-            lethalConfigLoaded = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(HQRebalance.LethalConfigGUID);
-
-        if (fairerFireExitsLoaded == null)
-            fairerFireExitsLoaded = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(HQRebalance.FairerFireExitsGUID);
+        lethalConfigLoaded = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(HQRebalance.LethalConfigGUID);
+        fairerFireExitsLoaded = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(HQRebalance.FairerFireExitsGUID);
 
         cfg.SaveOnConfigSet = false;
 
@@ -357,7 +354,7 @@ internal class HQRConfig
         cfg.SaveOnConfigSet = true;
         presetToUse = preset.Value;
 
-        if (lethalConfigLoaded.Value)
+        if (lethalConfigLoaded)
         {
             AddLethalConfigItemsPassOne();
             ConfigLethalConfigModEntry();
@@ -396,14 +393,11 @@ internal class HQRConfig
             selectableEnemies[enemy] = enemyConfig;
         }
 
-        ClearOrphanedEntries(cfg);
         cfg.Save();
         cfg.SaveOnConfigSet = true;
 
-        if (lethalConfigLoaded == null || !lethalConfigLoaded.Value)
-            return;
-
-        AddLethalConfigItemsPassTwo();
+        if (lethalConfigLoaded)
+            AddLethalConfigItemsPassTwo();
     }
 
     [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
@@ -466,17 +460,6 @@ internal class HQRConfig
 		LethalConfig.LethalConfigManager.AddConfigItem(difficultyScalingPatchConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(quotaScalingFactorConfig);
 
-        LethalConfig.ConfigItems.BoolCheckBoxConfigItem infestationPatchConfig = new(infestationPatch, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
-		LethalConfig.LethalConfigManager.AddConfigItem(infestationPatchConfig);
-        LethalConfig.ConfigItems.IntSliderConfigItem baseChanceConfig = new(baseChance, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
-        LethalConfig.ConfigItems.IntSliderConfigItem boostedChanceConfig = new(boostedChance, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
-        LethalConfig.ConfigItems.IntSliderConfigItem daysLootedInARowConfig = new(daysLootedInARow, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 1, Max = 9, RequiresRestart = false });
-        LethalConfig.ConfigItems.IntSliderConfigItem lootThresholdConfig = new(lootThreshold, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
-		LethalConfig.LethalConfigManager.AddConfigItem(baseChanceConfig);
-		LethalConfig.LethalConfigManager.AddConfigItem(boostedChanceConfig);
-		LethalConfig.LethalConfigManager.AddConfigItem(daysLootedInARowConfig);
-		LethalConfig.LethalConfigManager.AddConfigItem(lootThresholdConfig);
-
         LethalConfig.ConfigItems.BoolCheckBoxConfigItem moonPatchesConfig = new(moonPatches, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
 		LethalConfig.LethalConfigManager.AddConfigItem(moonPatchesConfig);
 
@@ -501,6 +484,17 @@ internal class HQRConfig
 		LethalConfig.LethalConfigManager.AddConfigItem(playerMovementPatchesConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(usePreV64GroundColisionConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(speedLostToWaterCavesConfig);
+
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem infestationPatchConfig = new(infestationPatch, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
+		LethalConfig.LethalConfigManager.AddConfigItem(infestationPatchConfig);
+        LethalConfig.ConfigItems.IntSliderConfigItem baseChanceConfig = new(baseChance, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
+        LethalConfig.ConfigItems.IntSliderConfigItem boostedChanceConfig = new(boostedChance, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
+        LethalConfig.ConfigItems.IntSliderConfigItem daysLootedInARowConfig = new(daysLootedInARow, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 1, Max = 9, RequiresRestart = false });
+        LethalConfig.ConfigItems.IntSliderConfigItem lootThresholdConfig = new(lootThreshold, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
+		LethalConfig.LethalConfigManager.AddConfigItem(baseChanceConfig);
+		LethalConfig.LethalConfigManager.AddConfigItem(boostedChanceConfig);
+		LethalConfig.LethalConfigManager.AddConfigItem(daysLootedInARowConfig);
+		LethalConfig.LethalConfigManager.AddConfigItem(lootThresholdConfig);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]

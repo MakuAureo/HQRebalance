@@ -14,6 +14,7 @@ internal class GameNetworkManagerPatches
         Network.HQRNetworkManager.CreateAndRegisterPrefab();
 
         EnemyType[] allEnemies = Resources.FindObjectsOfTypeAll<EnemyType>();
+        HQRebalance.ConfigOptions.AddAllEnemiesToConfig(HQRebalance.Instance.Config, allEnemies);
     }
 
     [HarmonyPatch(nameof(GameNetworkManager.SaveGameValues))]
