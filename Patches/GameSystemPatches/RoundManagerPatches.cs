@@ -57,7 +57,7 @@ internal class RoundManagerPatches
 
     [HarmonyPatch(nameof(RoundManager.SpawnScrapInLevel))]
     [HarmonyTranspiler]
-    public static IEnumerable<CodeInstruction> TranspileSpawnScrapInLevel(IEnumerable<CodeInstruction> codes)
+    private static IEnumerable<CodeInstruction> TranspileSpawnScrapInLevel(IEnumerable<CodeInstruction> codes)
     {
         if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.disableSingleItemDay.Value)
             return codes;
@@ -72,7 +72,7 @@ internal class RoundManagerPatches
 
     [HarmonyPatch(nameof(RoundManager.PlotOutEnemiesForNextHour))]
     [HarmonyTranspiler]
-    public static IEnumerable<CodeInstruction> TranspilePlotOutEnemiesForNextHour(IEnumerable<CodeInstruction> codes)
+    private static IEnumerable<CodeInstruction> TranspilePlotOutEnemiesForNextHour(IEnumerable<CodeInstruction> codes)
     {
         if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.infestationPatch.Value)
             return codes;
@@ -98,7 +98,7 @@ internal class RoundManagerPatches
 
     [HarmonyPatch(nameof(RoundManager.RefreshEnemiesList))]
     [HarmonyTranspiler]
-    public static IEnumerable<CodeInstruction> TranspileRefreshEnemyList(IEnumerable<CodeInstruction> codes)
+    private static IEnumerable<CodeInstruction> TranspileRefreshEnemyList(IEnumerable<CodeInstruction> codes)
     {
         if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.infestationPatch.Value)
             return codes;
@@ -118,7 +118,7 @@ internal class RoundManagerPatches
 
     [HarmonyPatch(nameof(RoundManager.AssignRandomEnemyToVent))]
     [HarmonyTranspiler]
-    public static IEnumerable<CodeInstruction> TranspileAssignRandomEnemyToVent(IEnumerable<CodeInstruction> codes)
+    private static IEnumerable<CodeInstruction> TranspileAssignRandomEnemyToVent(IEnumerable<CodeInstruction> codes)
     {
         if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.infestationPatch.Value)
             return codes;
@@ -185,13 +185,10 @@ internal static class RoundManagerHelper
 
             for (int i = 0; i < instance.currentLevel.Enemies.Count; i++)
             {
-                foreach (KeyValuePair<EnemyType, BepInEx.Configuration.ConfigEntry<bool>> targetableEnemy in HQRebalance.ConfigOptions.selectableEnemies)
+                if (HQRebalance.ConfigOptions.selectableEnemies.TryGetValue(instance.currentLevel.Enemies[i].enemyType, out BepInEx.Configuration.ConfigEntry<bool> canEnemyBeChosenConfig) && canEnemyBeChosenConfig.Value)
                 {
-                    if (instance.currentLevel.Enemies[i].enemyType.enemyName == targetableEnemy.Key.enemyName && targetableEnemy.Value.Value)
-                    {
-                        enem.Add(i);
-                        found = true; ;
-                    }
+                    enem.Add(i);
+                    found = true; ;
                 }
             }
 

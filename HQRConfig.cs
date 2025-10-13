@@ -3,8 +3,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using BepInEx.Configuration;
 using HarmonyLib;
-using LethalConfig.ConfigItems;
-using LethalConfig.ConfigItems.Options;
 
 namespace HQRebalance;
 
@@ -69,7 +67,7 @@ internal class HQRConfig
     public bool? lethalConfigLoaded;
     public bool? fairerFireExitsLoaded;
 
-    public HQRConfig(ConfigFile cfg, EnemyType[] allEnemies)
+    public HQRConfig(ConfigFile cfg)
     {
         if (lethalConfigLoaded == null)
             lethalConfigLoaded = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey(HQRebalance.LethalConfigGUID);
@@ -79,10 +77,12 @@ internal class HQRConfig
 
         cfg.SaveOnConfigSet = false;
 
+        selectableEnemies = new();
+
         preset = cfg.Bind(
                 "General",
                 "Preset",
-                Presets.Default,
+                Presets.Custom,
                 "General patches to apply takes priority over single patches\nDefault: intended experience for this mod, meant to be used in a mostly vanilla setting\nCustom: choose whatever patches you want to use"
                 );
 
@@ -95,7 +95,7 @@ internal class HQRConfig
 
         butlerPatches = cfg.Bind(
                 "EnemyPatches.Butler",
-                "Butler Patches",
+                "Default Butler Patches",
                 true,
                 "Use all Butler patches with their default values, overwrites all other configs in this section"
                 );
@@ -116,7 +116,7 @@ internal class HQRConfig
 
         maneaterPatches = cfg.Bind(
                 "EnemyPatches.Maneater",
-                "Maneater Patches",
+                "Default Maneater Patches",
                 true,
                 "Use all Maneater patches with their default values, overwrites all other configs in this section"
                 );
@@ -144,7 +144,7 @@ internal class HQRConfig
 
         jesterPatches = cfg.Bind(
                 "EnemyPatches.Jester",
-                "Jester Patches",
+                "Default Jester Patches",
                 true,
                 "Use all Jester patches with their default values, overwrites all other configs in this section"
                 );
@@ -179,7 +179,7 @@ internal class HQRConfig
 
         maskedPatches = cfg.Bind(
                 "EnemyPatches.Masked",
-                "Masked Patches",
+                "Default Masked Patches",
                 true,
                 "Use all Masked patches with their default values, overwrites all other configs in this section"
                 );
@@ -200,7 +200,7 @@ internal class HQRConfig
 
         mineshaftPatch = cfg.Bind(
                 "DungenPatches.Mineshaft",
-                "Mineshaft Patch",
+                "Use Mineshaft Patch",
                 true,
                 "Change how mineshaft generates"
                 );
@@ -237,14 +237,14 @@ internal class HQRConfig
                 "GameSystemPatch.DifficultyScaling",
                 "Difficulty Scaling Patch",
                 true,
-                "Use quotas fulfilled difficulty scaling instead of vanilla's days completed in the current quota difficulty scaling"
+                "Use custom quotas fulfilled difficulty scaling instead of vanilla's days completed in the current quota difficulty scaling"
                 );
 
         quotaScalingFactor = cfg.Bind(
                 "GameSystemPatch.DifficultyScaling",
                 "Quota Scaling Factor",
                 0.2f,
-                new ConfigDescription("How much quotas fulfilled should increase spawns", new AcceptableValueRange<float>(0f, 1f))
+                new ConfigDescription("How many spawns each fulfilled quota should add", new AcceptableValueRange<float>(0f, 1f))
                 );
 
         infestationPatch = cfg.Bind(
@@ -253,28 +253,6 @@ internal class HQRConfig
                 true,
                 "Enable custom infestation event"
                 );
-
-        selectableEnemies = new();
-        foreach (EnemyType enemy in allEnemies)
-        {
-            if (enemy.isDaytimeEnemy || enemy.isOutsideEnemy)
-                continue;
-
-            if (selectableEnemies.TryGetValue(enemy, out _))
-            {
-                HQRebalance.Logger.LogWarning($"{enemy.enemyName} has duplicate entry... skipping");
-                continue;
-            }
-
-            ConfigEntry<bool> enemyConfig = cfg.Bind(
-                    "GameSystemPatch.Infestation.InfestationTargets",
-                    $"Can Choose {enemy.enemyName}",
-                    enemy.enemyName == "Nutcracker" || enemy.enemyName == "Butler" || enemy.enemyName == "Masked",
-                    "Can the custom infestation code select the current enemy as the main enemy for an infestation event\nWARNING: Checking this for enemies that should only spawn once WILL make them spawn with virtually unlimited spawns"
-                    );
-
-            selectableEnemies[enemy] = enemyConfig;
-        }
 
         baseChance = cfg.Bind(
                 "GameSystemPatch.Infestation",
@@ -308,7 +286,7 @@ internal class HQRConfig
                 "MoonPatches",
                 "Moon Patches",
                 true,
-                "Use HQR's modified values for item count, enemy pool and loot pool"
+                "Use HQR's modified values for item count, enemy pool and loot pool\nWARNING: This is incompatible with other mods that change moons enemies, spawns or loot"
                 );
 
         tier3passPatch = cfg.Bind(
@@ -381,7 +359,7 @@ internal class HQRConfig
 
         if (lethalConfigLoaded.Value)
         {
-            AddLethalConfigItems();
+            AddLethalConfigItemsPassOne();
             ConfigLethalConfigModEntry();
         }
     }
@@ -393,106 +371,146 @@ internal class HQRConfig
         orphanedEntries.Clear();
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-    private void AddLethalConfigItems()
+    public void AddAllEnemiesToConfig(ConfigFile cfg, EnemyType[] allEnemies)
     {
-        EnumDropDownConfigItem<Presets> presetConfig = new(preset, new EnumDropDownOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
+        cfg.SaveOnConfigSet = false;
+
+        foreach (EnemyType enemy in allEnemies)
+        {
+            if (enemy.isDaytimeEnemy || enemy.isOutsideEnemy)
+                continue;
+
+            if (selectableEnemies.TryGetValue(enemy, out _))
+            {
+                HQRebalance.Logger.LogWarning($"{enemy.enemyName} has duplicate entry... skipping");
+                continue;
+            }
+
+            ConfigEntry<bool> enemyConfig = cfg.Bind(
+                    "GameSystemPatch.Infestation.InfestationTargets",
+                    $"Can Choose {enemy.enemyName}",
+                    enemy.enemyName == "Nutcracker" || enemy.enemyName == "Butler" || enemy.enemyName == "Masked",
+                    "Can the custom infestation code select the current enemy as the main enemy for an infestation event\nWARNING: Checking this for enemies that should only spawn once WILL make them spawn with virtually unlimited spawns"
+                    );
+
+            selectableEnemies[enemy] = enemyConfig;
+        }
+
+        ClearOrphanedEntries(cfg);
+        cfg.Save();
+        cfg.SaveOnConfigSet = true;
+
+        if (lethalConfigLoaded == null || !lethalConfigLoaded.Value)
+            return;
+
+        AddLethalConfigItemsPassTwo();
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+    private void AddLethalConfigItemsPassOne()
+    {
+        LethalConfig.ConfigItems.EnumDropDownConfigItem<Presets> presetConfig = new(preset, new LethalConfig.ConfigItems.Options.EnumDropDownOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
         LethalConfig.LethalConfigManager.AddConfigItem(presetConfig);
 
-        BoolCheckBoxConfigItem fireExitPatchConfig = new(fireExitPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem fireExitPatchConfig = new(fireExitPatch, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
 		LethalConfig.LethalConfigManager.AddConfigItem(fireExitPatchConfig);
 
-        BoolCheckBoxConfigItem butlerPatchesConfig = new(butlerPatches, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        BoolCheckBoxConfigItem addKnifeIconConfig = new(addKnifeIcon, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        BoolCheckBoxConfigItem disableStealthStabConfig = new(disableStealthStab, false);
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem butlerPatchesConfig = new(butlerPatches, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem addKnifeIconConfig = new(addKnifeIcon, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem disableStealthStabConfig = new(disableStealthStab, false);
 		LethalConfig.LethalConfigManager.AddConfigItem(butlerPatchesConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(addKnifeIconConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(disableStealthStabConfig);
 
-        BoolCheckBoxConfigItem maneaterPatchesConfig = new(maneaterPatches, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        BoolCheckBoxConfigItem applyNomalDamageConfig = new(applyNomalDamage, false);
-        BoolCheckBoxConfigItem cannotCryOrEatBeforeSeeingPlayerConfig = new(cannotCryOrEatBeforeSeeingPlayer, false);
-        BoolCheckBoxConfigItem disableIncreasedSpawnChanceConfig = new(disableIncreasedSpawnChance, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem maneaterPatchesConfig = new(maneaterPatches, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem applyNomalDamageConfig = new(applyNomalDamage, false);
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem cannotCryOrEatBeforeSeeingPlayerConfig = new(cannotCryOrEatBeforeSeeingPlayer, false);
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem disableIncreasedSpawnChanceConfig = new(disableIncreasedSpawnChance, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
 		LethalConfig.LethalConfigManager.AddConfigItem(maneaterPatchesConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(applyNomalDamageConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(cannotCryOrEatBeforeSeeingPlayerConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(disableIncreasedSpawnChanceConfig);
 
-        BoolCheckBoxConfigItem jesterPatchesConfig = new(jesterPatches, false);
-        BoolCheckBoxConfigItem disableSolidHitboxConfig = new(disableSolidHitbox, false);
-        FloatSliderConfigItem pushForceConfig = new(pushForce, new FloatSliderOptions { Min = 0f, Max = 7f , RequiresRestart = false });
-        BoolCheckBoxConfigItem scaleFollowTimerWithInteriorSizeConfig = new(scaleFollowTimerWithInteriorSize, false);
-        FloatSliderConfigItem followTimerScalingConfig = new(followTimerScaling, new FloatSliderOptions { Min = 0f, Max = 1f, RequiresRestart = false });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem jesterPatchesConfig = new(jesterPatches, false);
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem disableSolidHitboxConfig = new(disableSolidHitbox, false);
+        LethalConfig.ConfigItems.FloatSliderConfigItem pushForceConfig = new(pushForce, new LethalConfig.ConfigItems.Options.FloatSliderOptions { Min = 0f, Max = 7f , RequiresRestart = false });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem scaleFollowTimerWithInteriorSizeConfig = new(scaleFollowTimerWithInteriorSize, false);
+        LethalConfig.ConfigItems.FloatSliderConfigItem followTimerScalingConfig = new(followTimerScaling, new LethalConfig.ConfigItems.Options.FloatSliderOptions { Min = 0f, Max = 1f, RequiresRestart = false });
 		LethalConfig.LethalConfigManager.AddConfigItem(jesterPatchesConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(disableSolidHitboxConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(pushForceConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(scaleFollowTimerWithInteriorSizeConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(followTimerScalingConfig);
 
-        BoolCheckBoxConfigItem maskedPatchesConfig = new(maskedPatches, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        BoolCheckBoxConfigItem useMaskItemConfig = new(useMaskItem, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        IntSliderConfigItem maskValueConfig = new(maskValue, new IntSliderOptions { Min = 28, Max = 51, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem maskedPatchesConfig = new(maskedPatches, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem useMaskItemConfig = new(useMaskItem, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.IntSliderConfigItem maskValueConfig = new(maskValue, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 28, Max = 51, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
 		LethalConfig.LethalConfigManager.AddConfigItem(maskedPatchesConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(useMaskItemConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(maskValueConfig);
 
-        BoolCheckBoxConfigItem mineshaftPatchConfig = new(mineshaftPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        FloatSliderConfigItem caveSizeConfig = new(caveSize, new FloatSliderOptions { Min = 0.05f, Max = 1f, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
-        FloatSliderConfigItem facilityDeltaConfig = new(facilityDelta, new FloatSliderOptions { Min = 0f, Max = 0.1f, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
-        FloatSliderConfigItem mapTileSizeConfig = new(mapTileSize, new FloatSliderOptions { Min = 0.8f, Max = 1.2f, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem mineshaftPatchConfig = new(mineshaftPatch, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.FloatSliderConfigItem caveSizeConfig = new(caveSize, new LethalConfig.ConfigItems.Options.FloatSliderOptions { Min = 0.05f, Max = 1f, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
+        LethalConfig.ConfigItems.FloatSliderConfigItem facilityDeltaConfig = new(facilityDelta, new LethalConfig.ConfigItems.Options.FloatSliderOptions { Min = 0f, Max = 0.1f, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
+        LethalConfig.ConfigItems.FloatSliderConfigItem mapTileSizeConfig = new(mapTileSize, new LethalConfig.ConfigItems.Options.FloatSliderOptions { Min = 0.8f, Max = 1.2f, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
 		LethalConfig.LethalConfigManager.AddConfigItem(mineshaftPatchConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(caveSizeConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(facilityDeltaConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(mapTileSizeConfig);
 
-        BoolCheckBoxConfigItem disableSingleItemDayConfig = new(disableSingleItemDay, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem disableSingleItemDayConfig = new(disableSingleItemDay, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
 		LethalConfig.LethalConfigManager.AddConfigItem(disableSingleItemDayConfig);
 
-        BoolCheckBoxConfigItem difficultyScalingPatchConfig = new(difficultyScalingPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
-        FloatSliderConfigItem quotaScalingFactorConfig = new(quotaScalingFactor, new FloatSliderOptions { Min = 0f, Max = 1f, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem difficultyScalingPatchConfig = new(difficultyScalingPatch, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
+        LethalConfig.ConfigItems.FloatSliderConfigItem quotaScalingFactorConfig = new(quotaScalingFactor, new LethalConfig.ConfigItems.Options.FloatSliderOptions { Min = 0f, Max = 1f, RequiresRestart = false, CanModifyCallback = DontAllowSettingChangeMidGameCallback });
 		LethalConfig.LethalConfigManager.AddConfigItem(difficultyScalingPatchConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(quotaScalingFactorConfig);
 
-        BoolCheckBoxConfigItem infestationPatchConfig = new(infestationPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem infestationPatchConfig = new(infestationPatch, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
 		LethalConfig.LethalConfigManager.AddConfigItem(infestationPatchConfig);
-        foreach (KeyValuePair<EnemyType, ConfigEntry<bool>> enemyEntryPair in selectableEnemies)
-        {
-            BoolCheckBoxConfigItem enemyEntryConfig = new(enemyEntryPair.Value, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-            LethalConfig.LethalConfigManager.AddConfigItem(enemyEntryConfig);
-        }
-        IntSliderConfigItem baseChanceConfig = new(baseChance, new IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
-        IntSliderConfigItem boostedChanceConfig = new(boostedChance, new IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
-        IntSliderConfigItem daysLootedInARowConfig = new(daysLootedInARow, new IntSliderOptions { Min = 1, Max = 9, RequiresRestart = false });
-        IntSliderConfigItem lootThresholdConfig = new(lootThreshold, new IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
+        LethalConfig.ConfigItems.IntSliderConfigItem baseChanceConfig = new(baseChance, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
+        LethalConfig.ConfigItems.IntSliderConfigItem boostedChanceConfig = new(boostedChance, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
+        LethalConfig.ConfigItems.IntSliderConfigItem daysLootedInARowConfig = new(daysLootedInARow, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 1, Max = 9, RequiresRestart = false });
+        LethalConfig.ConfigItems.IntSliderConfigItem lootThresholdConfig = new(lootThreshold, new LethalConfig.ConfigItems.Options.IntSliderOptions { Min = 0, Max = 100, RequiresRestart = false });
 		LethalConfig.LethalConfigManager.AddConfigItem(baseChanceConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(boostedChanceConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(daysLootedInARowConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(lootThresholdConfig);
 
-        BoolCheckBoxConfigItem moonPatchesConfig = new(moonPatches, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem moonPatchesConfig = new(moonPatches, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
 		LethalConfig.LethalConfigManager.AddConfigItem(moonPatchesConfig);
 
-        BoolCheckBoxConfigItem tier3passPatchConfig = new(tier3passPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        IntInputFieldConfigItem tier3passPriceConfig = new(tier3passPrice, new IntInputFieldOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
-        IntInputFieldConfigItem artPriceConfig = new(artPrice, new IntInputFieldOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem tier3passPatchConfig = new(tier3passPatch, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.IntInputFieldConfigItem tier3passPriceConfig = new(tier3passPrice, new LethalConfig.ConfigItems.Options.IntInputFieldOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+        LethalConfig.ConfigItems.IntInputFieldConfigItem artPriceConfig = new(artPrice, new LethalConfig.ConfigItems.Options.IntInputFieldOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
 		LethalConfig.LethalConfigManager.AddConfigItem(tier3passPatchConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(tier3passPriceConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(artPriceConfig);
 
-        BoolCheckBoxConfigItem luckPatchConfig = new(luckPatch, new BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
-        EnumDropDownConfigItem<LuckType> luckSystemConfig = new(luckSystem, false);
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem luckPatchConfig = new(luckPatch, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = true });
+        LethalConfig.ConfigItems.EnumDropDownConfigItem<LuckType> luckSystemConfig = new(luckSystem, false);
 		LethalConfig.LethalConfigManager.AddConfigItem(luckPatchConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(luckSystemConfig);
 
-        BoolCheckBoxConfigItem DisableCavesSignalPatchConfig = new(disableCavesSignalPatch, false);
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem DisableCavesSignalPatchConfig = new(disableCavesSignalPatch, false);
 		LethalConfig.LethalConfigManager.AddConfigItem(DisableCavesSignalPatchConfig);
 
-        BoolCheckBoxConfigItem playerMovementPatchesConfig = new(playerMovementPatches, false);
-        BoolCheckBoxConfigItem usePreV64GroundColisionConfig = new(usePreV64GroundColision, false);
-        FloatSliderConfigItem speedLostToWaterCavesConfig = new(speedLostToWaterCaves, new FloatSliderOptions { Min = 0f, Max = 1f, RequiresRestart = false });
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem playerMovementPatchesConfig = new(playerMovementPatches, false);
+        LethalConfig.ConfigItems.BoolCheckBoxConfigItem usePreV64GroundColisionConfig = new(usePreV64GroundColision, false);
+        LethalConfig.ConfigItems.FloatSliderConfigItem speedLostToWaterCavesConfig = new(speedLostToWaterCaves, new LethalConfig.ConfigItems.Options.FloatSliderOptions { Min = 0f, Max = 1f, RequiresRestart = false });
 		LethalConfig.LethalConfigManager.AddConfigItem(playerMovementPatchesConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(usePreV64GroundColisionConfig);
 		LethalConfig.LethalConfigManager.AddConfigItem(speedLostToWaterCavesConfig);
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+    private void AddLethalConfigItemsPassTwo()
+    {
+        foreach (KeyValuePair<EnemyType, ConfigEntry<bool>> enemyEntryPair in selectableEnemies)
+        {
+            LethalConfig.ConfigItems.BoolCheckBoxConfigItem enemyEntryConfig = new(enemyEntryPair.Value, new LethalConfig.ConfigItems.Options.BoolCheckBoxOptions { CanModifyCallback = DontAllowSettingChangeMidGameCallback, RequiresRestart = false });
+            LethalConfig.LethalConfigManager.AddConfigItem(enemyEntryConfig);
+        }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
@@ -503,7 +521,7 @@ internal class HQRConfig
 
 
     [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-    private CanModifyResult DontAllowSettingChangeMidGameCallback()
+    private LethalConfig.ConfigItems.Options.CanModifyResult DontAllowSettingChangeMidGameCallback()
     {
         return (StartOfRound.Instance == null, "Game already started");
     }

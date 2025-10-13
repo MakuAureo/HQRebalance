@@ -76,7 +76,7 @@ internal class DungeonGeneratorPatches
 
     [HarmonyPatch(nameof(DungeonGenerator.ProcessGlobalProps))]
     [HarmonyTranspiler]
-    public static IEnumerable<CodeInstruction> TranspileProcessGlobalProps(IEnumerable<CodeInstruction> codes)
+    private static IEnumerable<CodeInstruction> TranspileProcessGlobalProps(IEnumerable<CodeInstruction> codes)
     {
         if (HQRebalance.ConfigOptions.fairerFireExitsLoaded != null && HQRebalance.ConfigOptions.fairerFireExitsLoaded.Value)
             return codes;

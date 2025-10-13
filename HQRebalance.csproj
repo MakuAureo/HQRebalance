@@ -2,7 +2,7 @@
     <PropertyGroup>
         <AssemblyName>OreoM.HQRebalance</AssemblyName>
         <Product>HQRebalance</Product>
-        <Version>0.10.0</Version>
+        <Version>0.10.2</Version>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -47,9 +47,6 @@
     <ItemGroup>
         <Reference Include="LethalConfig">
             <HintPath>../ExtraDep/LethalConfig.dll</HintPath>
-        </Reference>
-        <Reference Include="OreoM.FairerFireExits">
-            <HintPath>../ExtraDep/OreoM.FairerFireExits.dll</HintPath>
         </Reference>
     </ItemGroup>
 </Project>

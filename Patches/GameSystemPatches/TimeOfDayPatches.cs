@@ -31,7 +31,7 @@ internal class TimeOfDayPatches
 
     [HarmonyPatch(nameof(TimeOfDay.SetNewProfitQuota))]
     [HarmonyTranspiler]
-    public static IEnumerable<CodeInstruction> TranspileSetNewProfitQuota(IEnumerable<CodeInstruction> codes)
+    private static IEnumerable<CodeInstruction> TranspileSetNewProfitQuota(IEnumerable<CodeInstruction> codes)
     {
         if (HQRebalance.ConfigOptions.preset.Value == Presets.Custom && !HQRebalance.ConfigOptions.luckPatch.Value)
             return codes;

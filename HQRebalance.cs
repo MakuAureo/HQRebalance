@@ -4,6 +4,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using UnityEngine;
 using HQRebalance.Utility;
+using System;
 
 namespace HQRebalance;
 
@@ -27,16 +28,8 @@ public class HQRebalance : BaseUnityPlugin
         Logger = base.Logger;
         Instance = this;
 
-        //Delay patch until all assemblies are loaded and the Postfix to Start of GameNetworkManager has loaded the config file
-        Harmony ??= new Harmony(MyPluginInfo.PLUGIN_GUID);
-        MethodInfo gnmStart = AccessTools.Method(typeof(GameNetworkManager), nameof(GameNetworkManager.Start));
-        MethodInfo gnmStartPost = typeof(Patches.GameNetworkManagerPatches).GetMethod(nameof(Patches.GameNetworkManagerPatches.PostStart));
-        if (gnmStart == null)
-        {
-            Logger.LogError("MethodInfo not found");
-            return;
-        }
-        Harmony.Patch(gnmStart, postfix: new HarmonyMethod(gnmStartPost));
+        ConfigOptions = new(base.Config);
+        Patch();
         NetcodePatch();
 
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} v{MyPluginInfo.PLUGIN_VERSION} has loaded!");
@@ -50,10 +43,17 @@ public class HQRebalance : BaseUnityPlugin
             var methods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
             foreach (var method in methods)
             {
-                var attributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
-                if (attributes.Length > 0)
+                try
                 {
-                    method.Invoke(null, null);
+                    var attributes = method.GetCustomAttributes(typeof(RuntimeInitializeOnLoadMethodAttribute), false);
+                    if (attributes.Length > 0)
+                    {
+                        method.Invoke(null, null);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.LogWarning($"Netcode patcher errored, tho this is possible intended.\nError message: {e.Message}");
                 }
             }
         }
