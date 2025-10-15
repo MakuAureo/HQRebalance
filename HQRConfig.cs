@@ -349,9 +349,6 @@ internal class HQRConfig
                 new ConfigDescription("How much speed is lost when crouching in water caves, 0 is for no speed penalty and 1 is vanilla behavior", new AcceptableValueRange<float>(0f, 1f))
                 );
 
-        ClearOrphanedEntries(cfg);
-        cfg.Save();
-        cfg.SaveOnConfigSet = true;
         presetToUse = preset.Value;
 
         if (lethalConfigLoaded)
@@ -370,8 +367,6 @@ internal class HQRConfig
 
     public void AddAllEnemiesToConfig(ConfigFile cfg, EnemyType[] allEnemies)
     {
-        cfg.SaveOnConfigSet = false;
-
         foreach (EnemyType enemy in allEnemies)
         {
             if (enemy.isDaytimeEnemy || enemy.isOutsideEnemy)
@@ -393,6 +388,7 @@ internal class HQRConfig
             selectableEnemies[enemy] = enemyConfig;
         }
 
+        ClearOrphanedEntries(cfg);
         cfg.Save();
         cfg.SaveOnConfigSet = true;
 
